@@ -14,7 +14,7 @@
   font-display: block;
 }
 
-i.icon-fortune500si {
+i.icon-fortune500si,i.icon-briefcase-iconsi ,i.icon-saas-iconsi ,i.icon-ml-ai-iconsi  {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: 'icomoon' !important;
   speak: never;
@@ -29,45 +29,19 @@ i.icon-fortune500si {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-fortune500si .path1:before {
-  content: "\e900";
-  
-}
-.icon-fortune500si .path2:before {
+.icon-ml-ai-iconsi:before {
   content: "\e901";
-  margin-left: -1.3046875em;
-  
 }
-.icon-fortune500si .path3:before {
+.icon-briefcase-iconsi:before {
   content: "\e902";
-  margin-left: -1.3046875em;
-  
 }
-.icon-fortune500si .path4:before {
+.icon-saas-iconsi:before {
   content: "\e903";
-  margin-left: -1.3046875em;
-  
 }
-.icon-fortune500si .path5:before {
-  content: "\e904";
-  margin-left: -1.3046875em;
-  
+.icon-fortune500si:before {
+  content: "\e900";
 }
-.icon-fortune500si .path6:before {
-  content: "\e905";
-  margin-left: -1.3046875em;
-  
-}
-.icon-fortune500si .path7:before {
-  content: "\e906";
-  margin-left: -1.3046875em;
-  
-}
-.icon-fortune500si .path8:before {
-  content: "\e907";
-  margin-left: -1.3046875em;
-  
-}
+
 
 
 
@@ -11155,8 +11129,22 @@ p {
   /* border: 7px solid white; */
   overflow: hidden !important;
   --ggs: 1.3;
-  
+  font-size:40px;
+  color: #4974a5;
 }
+
+.card .card-header.has-icon3 i {
+ 
+  position: absolute;
+  top: -25px;
+  font-weight:500;
+   border: 7px solid white; 
+  overflow: hidden !important;
+  --ggs: 1.3;
+  font-size:35px;
+  color: #4974a5;
+}
+
 
 .card .card-body {
   font-size: 14px;
