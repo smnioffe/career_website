@@ -1,5 +1,78 @@
 @charset "UTF-8";
 
+
+
+@font-face {
+  font-family: 'icomoon';
+  src:  url('/assets/fonts/icomoon.eot?tqpsue');
+  src:  url('/assets/fonts/icomoon.eot?tqpsue#iefix') format('embedded-opentype'),
+    url('/assets/fonts/icomoon.ttf?tqpsue') format('truetype'),
+    url('/assets/fonts/icomoon.woff?tqpsue') format('woff'),
+    url('/assets/fonts/icomoon.svg?tqpsue#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+i.icon-fortune500si {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-fortune500si .path1:before {
+  content: "\e900";
+  
+}
+.icon-fortune500si .path2:before {
+  content: "\e901";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path3:before {
+  content: "\e902";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path4:before {
+  content: "\e903";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path5:before {
+  content: "\e904";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path6:before {
+  content: "\e905";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path7:before {
+  content: "\e906";
+  margin-left: -1.3046875em;
+  
+}
+.icon-fortune500si .path8:before {
+  content: "\e907";
+  margin-left: -1.3046875em;
+  
+}
+
+
+
+
+
 @import url('https://fonts.googleapis.com/css2?family=Alegreya&display=swap');
 @import url("https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200i,300,300i,400,400i,600,600i,700,700i,900,900i&display=swap");
 :root {
@@ -34,12 +107,12 @@
 }
 
 
-
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
+
 
 html {
   font-family: sans-serif;
