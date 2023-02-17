@@ -11934,3 +11934,15 @@ h1.font40{
 .about-card.small-bottom-pad{
   padding-bottom:30px;
 }
+
+
+
+.bottom-headshot{
+  border: 10px solid white;
+  width: 170px;
+  border-radius: 50%;
+}
+
+#contact .contact-info-card{
+  min-height:300px;
+}
