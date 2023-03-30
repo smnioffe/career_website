@@ -314,6 +314,7 @@ An experienced professional with extensive expertise in cloud, SaaS, databases, 
                                   <h6>Docker</h6>                    
                                 </div>
                                 <div class="h6-container">
+                                    <h6>pySpark</h6>
                                     <h6>Pandas</h6>
                                     <h6>Jupyter</h6>
                                   </div>
@@ -539,6 +540,9 @@ An experienced professional with extensive expertise in cloud, SaaS, databases, 
                     <a href="#" data-filter=".stock">
                         Stock Dashboard
                      </a>
+                         <a href="#" data-filter=".noshow">
+                        ML Model
+                     </a>
                 </div>
                 <div class="portfolio-container"> 
                     <div class="col-md-10 col-lg-6 etl start-item">
@@ -640,6 +644,162 @@ An experienced professional with extensive expertise in cloud, SaaS, databases, 
                                 </div>
                             </div>
                         </div>                                                     
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide1.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide1.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Appointment No Show Model</h6>
+                                    <p class="subtitle">The model was made to predict “No Shows” from clinical & claims data.
+                                        “No Shows” are appointments which a patient makes, but doesn’t show up for, cancel or reschedule prior
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide2.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide2.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Benefits of Predicting No Shows</h6>
+                                    <p class="subtitle">Target	outreach, additional appointment reminders or other services like at home visits, transportation or assistance from social workers
+
+                                        Target the cross section of likely “No-Shows” & High-Risk patients
+                                        
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide3.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide3.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Past Behavior</h6>
+                                    <p class="subtitle">For each appointment, the status of the previous appointment (Kept, No-show, etc.)  was obtained along with number of previous appointments, and the patients trailing appointment behavior (ex. 25% cancelled, 25% no show, 50% kept)
+
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide4.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide4.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Getting the Data</h6>
+                                    <p class="subtitle">The first step was to obtain data for each appointment for a given time and relative information like time of day, when the appointment was made, etc.
+
+                                        
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide5.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide5.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Demographics</h6>
+                                    <p class="subtitle">The next step was to obtain patient demographics such as age, gender as well as patient chronic conditions and past diagnoses
+
+
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide6.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide6.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Distance to Appointment</h6>
+                                    <p class="subtitle">
+                                        Created Python script which used the Google Maps API to retrieve coordinated for each location, based on the practice name
+                                        Found a lookup table to map patients ZIP codes to coordinates and used Haversine formula to find distance between the two sets of coordinates
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide7.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide7.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Income</h6>
+                                    <p class="subtitle">Used publicly available income information to approximate income by patient zip code
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide8.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide8.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Provider Specialty</h6>
+                                    <p class="subtitle">
+                                        Grouped several categories and select the top reasons and specialties as features
+
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide9.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide9.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Tuning The Model</h6>
+                                    <p class="subtitle">Used Python and SQL to transform nominal features (ethnicity, gender, etc.) into binary features (ex: female: 1/0; male: 1/0). The features were normalized to have the same initial weight.
+
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
+                    </div>
+
+                    <div class="col-md-10 col-lg-6  noshow">
+                        <div class="portfolio-item">
+                            <img src="assets/imgs/no_show_model/Slide10.jpeg" class="img-fluid" alt="Download free bootstrap 4 admin dashboard, free boootstrap 4 templates">
+                            <div class="content-holder">
+                                <a class="img-popup" href="assets/imgs/no_show_model/Slide10.jpeg"></a>
+                                <div class="text-holder">
+                                    <h6 class="title">Selecting The Model</h6>
+                                    <p class="subtitle">
+                                        Using different hyperparameter as well as models to choose best model and parameters. Evaluated: Decision Tree vs K Nearest Neighbor vs Random Forrest vs Ridge Classifier vs Logistic Regression
+
+
+                                        </p>
+                                </div>
+                            </div> 
+                        </div>                         
                     </div>
                
                 </div> 
