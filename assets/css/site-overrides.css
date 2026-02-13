@@ -1,0 +1,771 @@
+:root {
+  --ui-primary: #4974a5;
+  --ui-primary-dark: #355d85;
+  --ui-accent: #f85c70;
+  --ui-bg: #f4f7fb;
+  --ui-surface: #ffffff;
+  --ui-border: #dfe7f0;
+  --ui-text: #24374d;
+  --ui-muted: #5f738d;
+  --ui-shadow-sm: 0 2px 8px rgba(25, 42, 67, 0.06);
+  --ui-shadow-md: 0 8px 20px rgba(25, 42, 67, 0.1);
+  --ui-font-body: "Source Sans Pro", sans-serif;
+  --ui-font-display: "Source Sans Pro", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-y: none;
+  background: #0e1722;
+}
+
+body {
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: var(--ui-font-body);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.62;
+  letter-spacing: 0.0025em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--ui-text);
+  font-family: var(--ui-font-display);
+  letter-spacing: -0.01em;
+}
+
+h1,
+h2 {
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.16;
+}
+
+h3,
+h4 {
+  font-weight: 600;
+  line-height: 1.24;
+}
+
+h5,
+h6 {
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+}
+
+.header .header-content .header-title,
+.header .header-content .header-subtitle,
+.header .header-content .header-mono {
+  color: #f7fbff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+p,
+.subtitle,
+.job-subtitle {
+  color: var(--ui-muted);
+  font-size: 1.01rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--ui-primary);
+}
+
+a:hover {
+  color: var(--ui-primary-dark);
+}
+
+.line {
+  background-color: var(--ui-primary);
+}
+
+.navbar {
+  background: rgba(255, 255, 255, 0.93) !important;
+  border-bottom: 1px solid rgba(53, 93, 133, 0.14);
+  box-shadow: 0 8px 22px rgba(20, 36, 56, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.navbar .nav-link {
+  position: relative;
+  font-size: 0.94rem;
+  font-weight: 600;
+  padding-left: 0.85rem !important;
+  padding-right: 0.85rem !important;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+}
+
+.navbar .nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.2rem;
+  height: 2px;
+  background: var(--ui-primary);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s ease;
+}
+
+.navbar .nav-link:hover::after,
+.navbar .nav-link.active::after {
+  transform: scaleX(1);
+}
+
+.navbar .nav-link.active {
+  color: var(--ui-primary) !important;
+}
+
+/* Keep first/last nav links balanced so underline stays centered under text (Home/Contact). */
+.navbar .navbar-nav:first-child .nav-item:first-child .nav-link,
+.navbar .navbar-nav:last-child .nav-item:last-child .nav-link {
+  padding-left: 0.85rem !important;
+  padding-right: 0.85rem !important;
+}
+
+.navbar .brand .brand-img {
+  border-width: 8px;
+  box-shadow: var(--ui-shadow-sm);
+}
+
+.navbar .brand .brand-txt .brand-title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.btn {
+  border-radius: 999px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #517fb1, #3f6c9d);
+  border-color: #3f6c9d;
+  box-shadow: 0 10px 24px rgba(63, 108, 157, 0.3);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: linear-gradient(135deg, #406d9d, #32577f);
+  border-color: #32577f;
+}
+
+.btn-outline-danger {
+  border-color: rgba(73, 116, 165, 0.35);
+  color: #4d6785;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: none;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+  background: rgba(73, 116, 165, 0.1);
+  border-color: rgba(73, 116, 165, 0.45);
+  color: #3d5877;
+  transform: none;
+  box-shadow: none;
+}
+
+.section {
+  padding-top: 86px;
+  padding-bottom: 86px;
+}
+
+.section.bg-custom-gray {
+  background: linear-gradient(180deg, #f3f7fb 0%, #eff4fa 100%);
+}
+
+.about-section {
+  border-bottom-color: rgba(53, 93, 133, 0.18);
+}
+
+.about-section .about-card {
+  background: var(--ui-surface);
+  border-right-color: var(--ui-border);
+  box-shadow: none;
+}
+
+.card {
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.card .card-header {
+  border-bottom: none;
+}
+
+#skills .row {
+  margin-top: 6px;
+  row-gap: 32px;
+}
+
+#skills .row > [class*="col-"] {
+  display: flex;
+}
+
+#skills .card.mb-5 {
+  width: 100%;
+  height: 100%;
+  margin-bottom: 0 !important;
+  overflow: visible;
+  border-radius: 10px;
+  background: #fff;
+}
+
+#skills .card .card-header {
+  position: relative;
+  height: 22px;
+  overflow: visible;
+}
+
+#skills .card .card-header.has-icon::before,
+#skills .card .card-header.has-icon2::before,
+#skills .card .card-header.has-icon3::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: -28px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--ui-border);
+  z-index: 1;
+}
+
+#skills .card .card-header.has-icon i,
+#skills .card .card-header.has-icon3 i {
+  position: absolute;
+  left: 12px;
+  top: -28px !important;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 2;
+  line-height: 1;
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#skills .card .card-header.has-icon i {
+  font-size: 0 !important;
+}
+
+#skills .card .card-header.has-icon2 i {
+  /* Process Focused icon guardrail:
+     This uses the css-gg `gg-list-tree` icon, which is *drawn via background-image gradients*
+     plus pseudo-elements. Do NOT set `background` / `background-image` / `background-color`
+     on this element (or via generic `i { background: ... }` rules) or the icon will break.
+     Keep sizing driven by the css-gg class and only position it here. */
+  position: absolute;
+  left: 30px;
+  top: -10px !important;
+  overflow: hidden !important;
+  --ggs: 1.3;
+  z-index: 2;
+}
+
+/* Keep css-gg list-tree's gradient drawing intact even if someone later adds
+   broad `background: ...` resets for icons in this section. */
+#skills .card .card-header.has-icon2 i.gg-list-tree {
+  background:
+    linear-gradient(to left, currentColor 8px, transparent 0) no-repeat left top /
+      8px 8px,
+    linear-gradient(to left, currentColor 8px, transparent 0) no-repeat center 3px /
+      8px 2px,
+    linear-gradient(to left, currentColor 8px, transparent 0) no-repeat 10px 17px /
+      6px 2px,
+    linear-gradient(to left, currentColor 8px, transparent 0) no-repeat 10px 3px /
+      2px 16px;
+}
+
+#skills .card .card-header.has-icon3 i {
+  font-size: 0 !important;
+}
+
+#skills .card .card-header.has-icon i::before,
+#skills .card .card-header.has-icon3 i::before {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: block;
+  line-height: 1;
+  font-size: 31px;
+  font-weight: 500;
+}
+
+#skills .card .card-header.has-icon i.ti-cloud::before {
+  font-size: 34px;
+}
+
+#skills .skills-blurb {
+  min-height: 220px;
+  height: 100%;
+}
+
+#skills .skills-blurb a {
+  /* Make inline links (e.g. "examples here") read as links, like the live site. */
+  color: var(--ui-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+#skills .skills-blurb a:hover {
+  color: var(--ui-primary-dark);
+}
+
+#resume .card .card-body {
+  font-size: 0.97rem;
+}
+
+.job-container {
+  border-left: 2px solid rgba(73, 116, 165, 0.18);
+  padding-left: 14px;
+}
+
+.job-subtitle {
+  font-weight: 600;
+  color: #6b839f;
+}
+
+.header-image.img-lucidworks {
+  width: 26%;
+  margin-right: 10px;
+}
+
+#resume .skills h5 {
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+#resume .skills h5 i {
+  font-size: 21px;
+}
+
+/* Resume Floating TOC (desktop only)
+   Built from `data-resume-company` + `data-resume-role` anchors in
+   `src/partials/experience-card-body.html` and rendered via `assets/js/custom.js`. */
+#resume .resume-experience-wrap {
+  position: relative;
+  overflow: visible;
+  /* Keep the Experience card full-width; TOC is positioned out of flow. */
+  display: block;
+  --resume-toc-width: 286px;
+}
+
+@media (min-width: 1200px) {
+  #resume .resume-container {
+    max-width: 1320px;
+  }
+}
+
+#resume .resume-row {
+  align-items: flex-start;
+}
+
+#resume .resume-row > [class*="col-"] {
+  align-self: flex-start;
+}
+
+#resume .resume-toc {
+  /* Fixed so it can sit near the left edge without narrowing the Experience card. */
+  position: fixed;
+  top: 162px;
+  left: 6px;
+  z-index: 999;
+  width: var(--resume-toc-width);
+  height: auto;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, -12px, 0);
+  transition: opacity 170ms ease-out, transform 170ms ease-out;
+}
+
+#resume.resume-toc-visible .resume-toc {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  pointer-events: auto;
+}
+
+#resume .resume-toc-shell {
+  width: 100%;
+}
+
+#resume .resume-toc-inner {
+  /* Intentionally not a "card". Keep it light and floating. */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+}
+
+#resume .resume-experience-card {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#resume .resume-toc-title {
+  --toc-title-hidden: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #6b839f;
+  margin: 0 0 10px;
+  opacity: calc(1 - var(--toc-title-hidden));
+  transform: translate3d(calc(var(--toc-title-hidden) * -30px), 0, 0);
+  transition: transform 130ms cubic-bezier(0.2, 0.85, 0.2, 1), opacity 130ms ease-out;
+}
+
+#resume .resume-toc-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#resume .resume-toc-nav a {
+  --toc-hidden: 0;
+  --toc-shift-sign: -1;
+  display: block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  color: #2b3b51;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.28;
+  opacity: calc(1 - var(--toc-hidden));
+  transform: translate3d(calc(var(--toc-shift-sign) * var(--toc-hidden) * 38px), 0, 0);
+  transition: transform 130ms cubic-bezier(0.2, 0.85, 0.2, 1), opacity 130ms ease-out,
+    background-color 140ms ease-out, color 140ms ease-out;
+}
+
+#resume .resume-toc-nav a:hover {
+  background: rgba(73, 116, 165, 0.08);
+  color: #263c55;
+}
+
+#resume .resume-toc-nav .toc-company > a {
+  font-weight: 700;
+  padding-top: 8px;
+  font-size: 1.01rem;
+}
+
+#resume .resume-toc-nav .toc-roles {
+  margin: 4px 0 6px 8px;
+  border-left: 1px solid rgba(73, 116, 165, 0.18);
+  padding-left: 8px;
+}
+
+#resume .resume-toc-nav .toc-role a {
+  font-size: 0.92rem;
+  color: #57718e;
+  padding: 4px 8px;
+}
+
+#resume .resume-toc-nav a.is-active {
+  background: rgba(73, 116, 165, 0.14);
+  color: var(--ui-primary-dark);
+}
+
+#resume [data-resume-company],
+#resume [data-resume-role] {
+  scroll-margin-top: 120px;
+}
+
+@media (max-width: 1200px) {
+  #resume .resume-experience-wrap {
+    --resume-toc-width: 236px;
+  }
+  #resume .resume-toc {
+    left: 4px;
+  }
+}
+
+@media (max-width: 900px) {
+  #resume .resume-toc {
+    display: none;
+  }
+}
+
+#resume .skills h5 span {
+  color: var(--ui-text);
+  font-weight: 600;
+  font-size: 1.03rem;
+}
+
+#resume .h6-container {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin: 0 0 6px 14px;
+}
+
+#resume .h6-container h6 {
+  margin: 0;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  color: #4f6680;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  position: relative;
+}
+
+#resume .h6-container h6::before {
+  content: none;
+}
+
+#resume .h6-container h6 + h6 {
+  margin-left: 2px;
+  padding-left: 12px;
+}
+
+#resume .h6-container h6 + h6::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 11px;
+  background: #c7d4e2;
+  border-radius: 1px;
+}
+
+#portfolio .portfolio-container .start-item .portfolio-item img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+}
+
+#portfolio .portfolio-container .searchmetrics .portfolio-item {
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#portfolio .portfolio-container .portfolio-item .content-holder .title,
+#portfolio .portfolio-container .portfolio-item .content-holder .subtitle {
+  color: #fff;
+}
+
+#portfolio .portfolio-container .portfolio-item .content-holder .title {
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+#portfolio .portfolio-container .portfolio-item .content-holder .subtitle {
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.contact .contact-info-card {
+  border: 1px solid var(--ui-border);
+  border-radius: 16px;
+  box-shadow: 0 3px 10px rgba(25, 42, 67, 0.08);
+  padding: 38px 34px 34px;
+}
+
+.contact .contact-title {
+  margin-bottom: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ui-text);
+}
+
+.contact .contact-title::after {
+  background: var(--ui-primary);
+}
+
+.contact .contact-info-card .row.mb-2 {
+  align-items: flex-start;
+  margin-bottom: 14px !important;
+}
+
+.contact .contact-info-card .row.mb-2 .col-1 {
+  flex: 0 0 34px;
+  max-width: 34px;
+  margin-right: 4px !important;
+  padding-top: 2px !important;
+}
+
+.contact .contact-info-card .row.mb-2 .col-10 {
+  flex: 1 1 auto;
+  max-width: calc(100% - 38px);
+  padding-left: 4px;
+}
+
+.contact .contact-info-card .row.mb-2 .icon-md {
+  font-size: 1.16rem;
+  color: #48688f;
+}
+
+.contact .contact-info-card h6.d-inline {
+  display: block !important;
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  font-weight: 700;
+  color: #2b435f;
+}
+
+.contact .contact-info-card h6.d-inline .text-muted {
+  display: block;
+  margin-top: 5px;
+  font-size: 1.04rem;
+  line-height: 1.35;
+  letter-spacing: 0.005em;
+  color: #5f738d !important;
+  font-weight: 600;
+}
+
+.contact .contact-info-card .social-icons {
+  margin: 4px 0 0;
+  padding: 14px 0 0 !important;
+}
+
+.contact .contact-info-card .social-icons .social-link {
+  color: #2e4564 !important;
+  opacity: 0.92;
+}
+
+.contact .contact-info-card .bottom-headshot {
+  border: 4px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 6px 16px rgba(18, 33, 52, 0.14);
+}
+
+.footer {
+  background: linear-gradient(135deg, #162a42, #203a58);
+}
+
+@media (max-width: 991.98px) {
+  .section {
+    padding-top: 72px;
+    padding-bottom: 72px;
+  }
+
+  .about-section .about-card {
+    box-shadow: none;
+  }
+
+  .job-container {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  #skills .row > [class*="col-"] {
+    display: block;
+  }
+
+  #skills .row {
+    row-gap: 24px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .section {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  #skills .skills-blurb {
+    min-height: 0;
+  }
+
+  #skills .row {
+    row-gap: 20px;
+  }
+
+  #resume .h6-container {
+    gap: 6px 12px;
+    margin-left: 10px;
+  }
+
+  #resume .h6-container h6 {
+    font-size: 0.85rem;
+  }
+
+  #resume .h6-container h6 + h6::before {
+    height: 10px;
+  }
+
+  .header-image.img-lucidworks {
+    width: 40%;
+    max-width: 165px;
+  }
+
+  .contact .contact-info-card {
+    padding: 30px 26px 28px;
+  }
+
+  .contact .contact-info-card h6.d-inline .text-muted {
+    font-size: 1rem;
+  }
+
+  #portfolio-filters {
+    max-width: none;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding-bottom: 8px;
+  }
+
+  #portfolio-filters a {
+    flex-basis: auto;
+    width: auto;
+    margin: 0;
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 1.25;
+    border-radius: 8px;
+    border: 1px solid rgba(73, 116, 165, 0.2);
+    opacity: 0.95;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
