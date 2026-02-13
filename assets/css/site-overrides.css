@@ -377,12 +377,13 @@ a:hover {
   overflow: visible;
   /* Keep the Experience card full-width; TOC is positioned out of flow. */
   display: block;
+  --resume-content-max: 1240px;
   --resume-toc-width: 286px;
 }
 
 @media (min-width: 1200px) {
   #resume .resume-container {
-    max-width: 1320px;
+    max-width: var(--resume-content-max);
   }
 }
 
@@ -398,7 +399,7 @@ a:hover {
   /* Fixed so it can sit near the left edge without narrowing the Experience card. */
   position: fixed;
   top: 162px;
-  left: 6px;
+  left: max(6px, calc((100vw - var(--resume-content-max)) / 2 - var(--resume-toc-width) - 14px));
   z-index: 999;
   width: var(--resume-toc-width);
   height: auto;
@@ -479,7 +480,7 @@ a:hover {
 #resume .resume-toc-nav .toc-company > a {
   font-weight: 700;
   padding-top: 8px;
-  font-size: 1.01rem;
+  font-size: 0.97rem;
 }
 
 #resume .resume-toc-nav .toc-roles {
@@ -489,7 +490,7 @@ a:hover {
 }
 
 #resume .resume-toc-nav .toc-role a {
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   color: #57718e;
   padding: 4px 8px;
 }
