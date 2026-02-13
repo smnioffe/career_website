@@ -373,8 +373,8 @@ a:hover {
    Built from `data-resume-company` + `data-resume-role` anchors in
    `src/partials/experience-card-body.html` and rendered via `assets/js/custom.js`. */
 #resume {
-  --resume-content-max: 1200px;
-  --resume-toc-width: 286px;
+  --resume-content-max: 1020px;
+  --resume-toc-width: 248px;
 }
 
 #resume .resume-experience-wrap {
@@ -483,7 +483,7 @@ a:hover {
 #resume .resume-toc-nav .toc-company > a {
   font-weight: 700;
   padding-top: 8px;
-  font-size: 0.97rem;
+  font-size: 0.93rem;
 }
 
 #resume .resume-toc-nav .toc-roles {
@@ -493,7 +493,7 @@ a:hover {
 }
 
 #resume .resume-toc-nav .toc-role a {
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   color: #57718e;
   padding: 4px 8px;
 }
@@ -510,7 +510,7 @@ a:hover {
 
 @media (max-width: 1200px) {
   #resume {
-    --resume-toc-width: 236px;
+    --resume-toc-width: 220px;
   }
   #resume .resume-toc {
     left: 4px;
