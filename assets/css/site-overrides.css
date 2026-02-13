@@ -372,13 +372,16 @@ a:hover {
 /* Resume Floating TOC (desktop only)
    Built from `data-resume-company` + `data-resume-role` anchors in
    `src/partials/experience-card-body.html` and rendered via `assets/js/custom.js`. */
+#resume {
+  --resume-content-max: 1200px;
+  --resume-toc-width: 286px;
+}
+
 #resume .resume-experience-wrap {
   position: relative;
   overflow: visible;
   /* Keep the Experience card full-width; TOC is positioned out of flow. */
   display: block;
-  --resume-content-max: 1240px;
-  --resume-toc-width: 286px;
 }
 
 @media (min-width: 1200px) {
@@ -399,7 +402,7 @@ a:hover {
   /* Fixed so it can sit near the left edge without narrowing the Experience card. */
   position: fixed;
   top: 162px;
-  left: max(6px, calc((100vw - var(--resume-content-max)) / 2 - var(--resume-toc-width) - 14px));
+  left: max(6px, calc((100vw - var(--resume-content-max)) / 2 - var(--resume-toc-width) + 7px));
   z-index: 999;
   width: var(--resume-toc-width);
   height: auto;
@@ -506,7 +509,7 @@ a:hover {
 }
 
 @media (max-width: 1200px) {
-  #resume .resume-experience-wrap {
+  #resume {
     --resume-toc-width: 236px;
   }
   #resume .resume-toc {
