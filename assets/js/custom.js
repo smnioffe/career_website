@@ -171,6 +171,7 @@ $(window).on("load", function() {
       roleEls = Array.prototype.slice.call(companyEl.querySelectorAll("h6.title"));
     }
 
+    var isSingleRoleCompany = roleEls.length === 1;
     var roles = roleEls.map(function (roleEl) {
       var roleName =
         roleEl.getAttribute("data-resume-role") || roleEl.textContent.trim();
@@ -179,7 +180,12 @@ $(window).on("load", function() {
         "role-" + slugify(companyName) + "-" + slugify(roleName)
       );
       roleToCompanyId.set(roleId, companyId);
-      return { name: roleName, id: roleId };
+      return {
+        name: roleName,
+        id: roleId,
+        // For single-role companies, role click should land at company start.
+        scrollId: isSingleRoleCompany ? companyId : roleId,
+      };
     });
 
     tocModel.push({ name: companyName, id: companyId, roles: roles });
@@ -203,6 +209,9 @@ $(window).on("load", function() {
       escapeHtml(company.id) +
       '" data-scroll-target="' +
       escapeHtml(company.id) +
+      '" data-active-target="' +
+      escapeHtml(company.id) +
+      '" data-toc-type="company"' +
       '">' +
       escapeHtml(company.name) +
       "</a>";
@@ -213,9 +222,12 @@ $(window).on("load", function() {
         html +=
           '<li class="toc-role">' +
           '<a href="#' +
-          escapeHtml(role.id) +
+          escapeHtml(role.scrollId || role.id) +
           '" data-scroll-target="' +
+          escapeHtml(role.scrollId || role.id) +
+          '" data-active-target="' +
           escapeHtml(role.id) +
+          '" data-toc-type="role"' +
           '">' +
           escapeHtml(role.name) +
           "</a>" +
@@ -237,9 +249,14 @@ $(window).on("load", function() {
     a.style.setProperty("--toc-link-index", String(index));
   });
 
-  var linkByTarget = new Map();
+  var roleLinkByRoleId = new Map();
+  var companyLinkByCompanyId = new Map();
   tocLinks.forEach(function (a) {
-    linkByTarget.set(a.getAttribute("data-scroll-target"), a);
+    var tocType = a.getAttribute("data-toc-type");
+    var activeTarget = a.getAttribute("data-active-target");
+    if (!activeTarget) return;
+    if (tocType === "role") roleLinkByRoleId.set(activeTarget, a);
+    if (tocType === "company") companyLinkByCompanyId.set(activeTarget, a);
   });
 
   var tocEntries = tocLinks.map(function (a) {
@@ -279,14 +296,14 @@ $(window).on("load", function() {
   function setActiveRole(roleId) {
     if (!roleId || roleId === activeRoleId) return;
 
-    clearActive(linkByTarget.get(activeRoleId));
-    clearActive(linkByTarget.get(activeCompanyId));
+    clearActive(roleLinkByRoleId.get(activeRoleId));
+    clearActive(companyLinkByCompanyId.get(activeCompanyId));
 
     activeRoleId = roleId;
     activeCompanyId = roleToCompanyId.get(roleId) || null;
 
-    var roleLink = linkByTarget.get(activeRoleId);
-    var companyLink = linkByTarget.get(activeCompanyId);
+    var roleLink = roleLinkByRoleId.get(activeRoleId);
+    var companyLink = companyLinkByCompanyId.get(activeCompanyId);
     if (roleLink) roleLink.classList.add("is-active");
     if (companyLink) companyLink.classList.add("is-active");
   }
