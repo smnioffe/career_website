@@ -1,6 +1,8 @@
 // node.js Packages / Dependencies
 const gulp          = require('gulp');
-const sass          = require('gulp-sass');
+// gulp-sass v5+ requires you to provide a Sass implementation. We use Dart Sass
+// to avoid legacy node-sass (Python2) build issues on modern Node versions.
+const sass          = require('gulp-sass')(require('sass'));
 const uglify        = require('gulp-uglify');
 const rename        = require('gulp-rename');
 const concat        = require('gulp-concat');
