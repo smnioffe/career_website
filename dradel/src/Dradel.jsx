@@ -733,23 +733,34 @@ const tileBg = (s) => (s === HIT ? COLORS.hit : s === NEAR ? COLORS.near : COLOR
 
 function Dreidel({ spinKey }) {
   return (
-    <svg
-      viewBox="0 0 60 76"
-      width="36"
-      height="46"
-      aria-hidden="true"
-      key={spinKey}
-      style={{
-        transformOrigin: "50% 45%",
-        animation: spinKey > 0 ? "dspin 1000ms cubic-bezier(.2,.7,.2,1) 1" : "none",
-      }}
-    >
-      <rect x="26" y="0" width="8" height="12" rx="2" fill={COLORS.brass} />
-      <path d="M10 12 h40 v34 l-20 22 -20 -22 z" fill={COLORS.tekhelet}
-        stroke={COLORS.brass} strokeWidth="2" strokeLinejoin="round" />
-      <text x="30" y="38" textAnchor="middle" fill={COLORS.parchment}
-        style={{ font: `600 22px ${DISPLAY}` }}>נ</text>
-    </svg>
+    <div className="dreidel-stage" aria-hidden="true">
+      <span className="dreidel-orbit" />
+      <svg
+        className="dreidel"
+        viewBox="0 0 60 76"
+        width="50"
+        height="64"
+        key={spinKey}
+        style={{
+          transformOrigin: "50% 45%",
+          animation: spinKey > 0 ? "dspin 1250ms cubic-bezier(.16,.74,.22,1) 1" : "none",
+        }}
+      >
+        <defs>
+          <linearGradient id="dreidel-blue" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stopColor="#4673CB" />
+            <stop offset="0.55" stopColor={COLORS.tekhelet} />
+            <stop offset="1" stopColor="#172C5D" />
+          </linearGradient>
+        </defs>
+        <rect x="26" y="0" width="8" height="12" rx="2" fill={COLORS.brass} />
+        <path d="M10 12 h40 v34 l-20 22 -20 -22 z" fill="url(#dreidel-blue)"
+          stroke={COLORS.brass} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M14 16 h30" stroke="rgba(255,255,255,0.24)" strokeWidth="1.5" strokeLinecap="round" />
+        <text x="30" y="39" textAnchor="middle" fill={COLORS.parchment}
+          style={{ font: `700 23px ${DISPLAY}` }}>נ</text>
+      </svg>
+    </div>
   );
 }
 
@@ -764,7 +775,7 @@ export default function Dradel() {
   const [hints, setHints] = useState(1); // first hint is free
   const [status, setStatus] = useState("playing");
   const [confirmGiveUp, setConfirmGiveUp] = useState(false);
-  const [spinKey, setSpinKey] = useState(0);
+  const [spinKey, setSpinKey] = useState(1);
   const [flash, setFlash] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [unseen, setUnseen] = useState(() => ANSWERS.map((p) => p.id));
@@ -789,6 +800,18 @@ export default function Dradel() {
 
   function spin() {
     setSpinKey((k) => k + 1);
+  }
+
+  function revealHint() {
+    if (hints >= 4) return;
+    setHints((count) => count + 1);
+    spin();
+  }
+
+  function giveUp() {
+    setStatus("gave-up");
+    setConfirmGiveUp(false);
+    spin();
   }
 
   function newGame() {
@@ -832,7 +855,17 @@ export default function Dradel() {
         html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
         body { min-width: 280px; overflow-x: hidden; }
         *, *::before, *::after { box-sizing: border-box; }
-        @keyframes dspin { from { transform: rotate(0deg) scale(1) } 60% { transform: rotate(760deg) scale(1.08) } to { transform: rotate(1080deg) scale(1) } }
+        @keyframes dspin {
+          0% { transform: rotate(0deg) scale(.88); filter: drop-shadow(0 0 0 rgba(199,154,69,0)); }
+          18% { transform: rotate(160deg) scale(1.03); }
+          52% { transform: rotate(720deg) scale(1.16); filter: drop-shadow(0 0 14px rgba(199,154,69,.8)); }
+          82% { transform: rotate(1045deg) scale(.97); }
+          100% { transform: rotate(1080deg) scale(1); filter: drop-shadow(0 7px 8px rgba(0,0,0,.42)); }
+        }
+        @keyframes orbitPulse {
+          0%, 100% { opacity: .38; transform: scale(.96); }
+          50% { opacity: .72; transform: scale(1.04); }
+        }
         @keyframes drop { from { opacity:0; transform: translateY(-10px) } to { opacity:1; transform:none } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
         .dapp {
@@ -845,10 +878,76 @@ export default function Dradel() {
           padding-left: max(16px, env(safe-area-inset-left));
           overflow-x: hidden;
         }
-        .dcontent { max-width: 880px; margin: 0 auto; }
-        .dheader { text-align: center; margin-bottom: 26px; }
+        .dcontent { max-width: 920px; margin: 0 auto; }
+        .dheader { text-align: center; margin-bottom: 28px; }
+        .dreidel-stage {
+          position: relative;
+          display: grid;
+          place-items: center;
+          width: 88px;
+          height: 88px;
+          margin: 0 auto 10px;
+          border: 1px solid rgba(199,154,69,.38);
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(43,78,150,.34), rgba(19,26,42,.3) 60%, transparent 61%);
+          box-shadow: inset 0 0 24px rgba(43,78,150,.2), 0 12px 34px rgba(0,0,0,.24);
+        }
+        .dreidel-orbit {
+          position: absolute;
+          inset: 8px;
+          border: 1px dashed rgba(199,154,69,.34);
+          border-radius: 50%;
+          animation: orbitPulse 2200ms ease-in-out infinite;
+        }
+        .dreidel {
+          position: relative;
+          z-index: 1;
+          filter: drop-shadow(0 7px 8px rgba(0,0,0,.42));
+          transform-style: preserve-3d;
+        }
+        .dbyline {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 14px;
+          padding: 8px 12px;
+          border: 1px solid rgba(199,154,69,.52);
+          border-radius: 999px;
+          background: rgba(199,154,69,.08);
+          color: ${COLORS.parchment};
+          font-family: ${MONO};
+          font-size: 10px;
+          letter-spacing: .14em;
+          text-decoration: none;
+          text-transform: uppercase;
+          transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+        }
+        .dbyline-label { color: ${COLORS.parchDim}; }
+        .dbyline-name { color: ${COLORS.brass}; font-weight: 700; }
+        .dbyline-arrow { font-size: 13px; color: ${COLORS.brass}; }
+        .dgame {
+          padding: 24px;
+          border: 1px solid rgba(46,58,92,.9);
+          border-radius: 16px;
+          background: linear-gradient(155deg, rgba(26,35,64,.78), rgba(12,17,28,.9) 55%);
+          box-shadow: 0 24px 70px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.025);
+        }
+        .dsection-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin: 0 0 9px;
+          color: ${COLORS.parchDim};
+          font-family: ${MONO};
+          font-size: 10px;
+          letter-spacing: .15em;
+          text-transform: uppercase;
+        }
+        .dsection-head strong { color: ${COLORS.brass}; font-weight: 400; }
         .dsearch { position: relative; margin-bottom: 14px; }
-        .dinput { min-height: 52px; }
+        .dinput { min-height: 54px; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+        .dinput:focus { border-color: ${COLORS.brass} !important; box-shadow: 0 0 0 3px rgba(199,154,69,.12); background: #171F33 !important; }
         .dsuggestions {
           max-height: min(336px, 42dvh);
           overflow-y: auto;
@@ -865,17 +964,37 @@ export default function Dradel() {
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
         }
+        .dhint { border-radius: 8px; box-shadow: inset 0 1px rgba(255,255,255,.025); }
         .dactions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 22px; }
-        .dcount { margin-left: auto; }
+        .dcount {
+          margin-left: auto;
+          padding: 7px 10px;
+          border: 1px solid ${COLORS.edge};
+          border-radius: 999px;
+          background: rgba(12,17,28,.5);
+        }
         .dconfirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         .dbtn {
           min-height: 44px;
           touch-action: manipulation;
           -webkit-tap-highlight-color: transparent;
+          transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, filter 140ms ease;
         }
-        .drow { animation: drop 240ms ease-out both; }
+        .dbtn:active { transform: translateY(1px) scale(.99); }
+        .drow {
+          animation: drop 240ms ease-out both;
+          padding: 12px;
+          border: 1px solid rgba(46,58,92,.72);
+          border-radius: 10px;
+          background: rgba(19,26,42,.55);
+        }
         .dgrid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; }
         .dlegend-direction { margin-left: auto; }
+        .dreveal { border-radius: 12px; box-shadow: 0 16px 44px rgba(0,0,0,.22); }
+        @media (hover: hover) {
+          .dbyline:hover { background: rgba(199,154,69,.14); border-color: ${COLORS.brass}; transform: translateY(-1px); }
+          .dbtn:not(:disabled):hover { filter: brightness(1.14); box-shadow: 0 8px 20px rgba(0,0,0,.18); transform: translateY(-1px); }
+        }
         @media (max-width: 479px) {
           .dapp {
             padding-top: max(18px, env(safe-area-inset-top));
@@ -884,7 +1003,11 @@ export default function Dradel() {
             padding-left: max(12px, env(safe-area-inset-left));
           }
           .dheader { margin-bottom: 20px; }
+          .dreidel-stage { width: 76px; height: 76px; margin-bottom: 8px; }
+          .dreidel { width: 43px; height: 55px; }
           .dtagline { letter-spacing: 0.18em !important; }
+          .dbyline { margin-top: 12px; padding: 7px 10px; font-size: 9px; }
+          .dgame { padding: 14px 12px; border-radius: 12px; }
           .dhint { padding: 9px 10px !important; }
           .dactions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
           .dactions > .dbtn { width: 100%; }
@@ -904,14 +1027,12 @@ export default function Dradel() {
           .dgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
         @media (min-width: 640px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
-        input:focus-visible, button:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
+        input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
       `}</style>
 
       <div className="dcontent">
         <header className="dheader">
-          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
-            <Dreidel spinKey={spinKey} />
-          </div>
+          <Dreidel spinKey={spinKey} />
           <h1 style={{
             fontFamily: DISPLAY, fontSize: "clamp(38px, 9vw, 62px)",
             letterSpacing: "0.16em", margin: 0, fontWeight: 700, textIndent: "0.16em",
@@ -922,18 +1043,28 @@ export default function Dradel() {
             fontFamily: MONO, fontSize: 12, letterSpacing: "0.22em",
             textTransform: "uppercase", color: COLORS.brass, margin: "8px 0 0",
           }}>Guess the famous Jew</p>
+          <a className="dbyline" href="/" aria-label="Made by Simon Ioffe — visit his portfolio">
+            <span className="dbyline-label">Made by</span>
+            <strong className="dbyline-name">Simon Ioffe</strong>
+            <span className="dbyline-arrow" aria-hidden="true">→</span>
+          </a>
           <p style={{ color: COLORS.parchDim, fontSize: 13, margin: "10px 0 0", lineHeight: 1.5 }}>
             Every wrong guess tells you how the two people compare. Narrow it down.
           </p>
         </header>
 
+        <main className="dgame">
         {!revealed && (
           <div style={{ marginBottom: 18 }}>
+            <div className="dsection-head">
+              <strong>Your clue</strong>
+              <span>{hints === 1 ? "Opening clue" : `${hints} clues revealed`}</span>
+            </div>
             {hintText.slice(0, hints).map((h, i) => (
               <div className="dhint" key={i} style={{
                 display: "flex", gap: 12, alignItems: "baseline",
                 borderLeft: `2px solid ${COLORS.brass}`, padding: "8px 14px",
-                marginBottom: 6, background: COLORS.ink2,
+                marginBottom: 6, background: `linear-gradient(90deg, ${COLORS.ink2}, rgba(26,35,64,.7))`,
               }}>
                 <span style={{ fontFamily: DISPLAY, fontSize: 20, color: COLORS.brass, width: 18 }}>{HEB[i]}</span>
                 <span style={{ fontSize: 15 }}>{h}</span>
@@ -944,8 +1075,13 @@ export default function Dradel() {
 
         {!revealed && (
           <div className="dsearch">
+            <label className="dsection-head" htmlFor="dradel-guess">
+              <strong>Your guess</strong>
+              <span>Answers and probe names</span>
+            </label>
             <input
               className="dinput"
+              id="dradel-guess"
               ref={inputRef} value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
@@ -954,7 +1090,7 @@ export default function Dradel() {
                 else if (e.key === "ArrowUp" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
                 else if (e.key === "Escape") setInput("");
               }}
-              placeholder="Type a name…"
+              placeholder="Start typing a name…"
               aria-label="Guess a famous Jewish person"
               aria-autocomplete="list"
               aria-controls="dradel-suggestions"
@@ -967,7 +1103,7 @@ export default function Dradel() {
               spellCheck="false"
               style={{
                 width: "100%", boxSizing: "border-box", background: COLORS.ink2,
-                border: `1px solid ${COLORS.edge}`, borderRadius: 4, color: COLORS.parchment,
+                border: `1px solid ${COLORS.edge}`, borderRadius: 10, color: COLORS.parchment,
                 fontFamily: DISPLAY, fontSize: 20, padding: "14px 16px",
               }}
             />
@@ -975,7 +1111,7 @@ export default function Dradel() {
               <ul className="dsuggestions" id="dradel-suggestions" role="listbox" style={{
                 listStyle: "none", margin: 0, padding: 0, position: "absolute", zIndex: 20,
                 left: 0, right: 0, background: COLORS.ink2, border: `1px solid ${COLORS.edge}`,
-                borderTop: "none", borderRadius: "0 0 4px 4px",
+                borderTop: "none", borderRadius: "0 0 10px 10px",
               }}>
                 {matches.map((p, i) => (
                   <li key={p.id} role="none">
@@ -1016,7 +1152,7 @@ export default function Dradel() {
           <Btn onClick={newGame}>New game</Btn>
           {!revealed && (
             <>
-              <Btn onClick={() => hints < 4 && setHints(hints + 1)} disabled={hints >= 4}>
+              <Btn onClick={revealHint} disabled={hints >= 4}>
                 {hints >= 4 ? "No hints left" : "Another hint"}
               </Btn>
               {!confirmGiveUp ? (
@@ -1024,7 +1160,7 @@ export default function Dradel() {
               ) : (
                 <span className="dconfirm">
                   <span style={{ fontSize: 13, color: COLORS.parchDim }}>Reveal the mystery Jew?</span>
-                  <Btn ghost onClick={() => { setStatus("gave-up"); setConfirmGiveUp(false); }}>Yes, reveal</Btn>
+                  <Btn ghost onClick={giveUp}>Yes, reveal</Btn>
                   <Btn ghost onClick={() => setConfirmGiveUp(false)}>Keep going</Btn>
                 </span>
               )}
@@ -1037,8 +1173,8 @@ export default function Dradel() {
         </div>
 
         {revealed && (
-          <div style={{
-            border: `1px solid ${COLORS.brass}`, background: COLORS.ink2,
+          <div className="dreveal" style={{
+            border: `1px solid ${COLORS.brass}`, background: `linear-gradient(145deg, ${COLORS.ink2}, rgba(43,78,150,.2))`,
             padding: "26px 22px", marginBottom: 26, textAlign: "center",
           }}>
             <p style={{
@@ -1074,6 +1210,7 @@ export default function Dradel() {
             Start anywhere. A bad guess is still information.
           </p>
         ) : null}
+        </main>
       </div>
     </div>
   );
@@ -1086,7 +1223,7 @@ function Btn({ children, onClick, disabled, ghost }) {
       border: `1px solid ${ghost ? COLORS.edge : COLORS.tekhelet}`,
       color: disabled ? COLORS.parchDim : COLORS.parchment,
       fontFamily: MONO, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase",
-      padding: "10px 14px", borderRadius: 3,
+      padding: "10px 14px", borderRadius: 8,
       cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
     }}>{children}</button>
   );
@@ -1097,7 +1234,7 @@ function Tile({ label, state, main, sub, arrow }) {
     <div style={{
       background: tileBg(state),
       border: `1px solid ${state === MISS ? COLORS.edge : "transparent"}`,
-      padding: "8px 8px 9px", borderRadius: 3, minHeight: 62,
+      padding: "8px 8px 9px", borderRadius: 6, minHeight: 62,
       display: "flex", flexDirection: "column", justifyContent: "space-between",
     }}>
       <div style={{
