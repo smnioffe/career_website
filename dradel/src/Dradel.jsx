@@ -1,0 +1,1075 @@
+import React, { useState, useMemo, useRef, useEffect } from "react";
+
+/* ================================================================
+   DRΔDEL — guess the famous Jew
+   ================================================================ */
+
+const COLORS = {
+  ink: "#0C111C",
+  ink2: "#131A2A",
+  panel: "#1A2340",
+  edge: "#2E3A5C",
+  tekhelet: "#2B4E96",
+  brass: "#C79A45",
+  parchment: "#EFE7D5",
+  parchDim: "#9AA3B8",
+  hit: "#2C6E52",
+  near: "#9C7A28",
+  miss: "#232B41",
+};
+
+const DISPLAY = "'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif";
+const BODY = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+const MONO = "'Courier New', Courier, monospace";
+
+const ERAS = ["pre-1940","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
+
+/* ---- ANSWER ROSTER: the 100 who can be the mystery person ----
+   [name, gender, birthYear, country, USstate, living, era, fields, blurb, [3 hints]] */
+const CORE = [
+["Scarlett Johansson","F",1984,"United States","New York",true,"2000s",["Acting"],"Actor. Among the highest-grossing film leads of her generation.",["Voiced an operating system opposite Joaquin Phoenix","Played a Marvel superspy for a decade","Danish first name, Polish-Jewish mother, raised in Manhattan"]],
+["Natalie Portman","F",1981,"Israel","",true,"1990s",["Acting"],"Actor and director. Oscar winner for Black Swan.",["Debuted as a child assassin's protégée","Won an Oscar for a ballet thriller","Born in Jerusalem; Harvard psychology degree"]],
+["Paul Newman","M",1925,"United States","Ohio",false,"1950s",["Acting","Film"],"Actor, racer, and founder of Newman's Own.",["His salad dressing funds charity","Cool Hand Luke and The Hustler","Blue-eyed star who raced cars professionally"]],
+["Harrison Ford","M",1942,"United States","Illinois",true,"1970s",["Acting"],"Actor. Han Solo and Indiana Jones.",["Was a carpenter before he was a star","Flew the Millennium Falcon","Also cracked a whip as an archaeologist"]],
+["Dustin Hoffman","M",1937,"United States","California",true,"1960s",["Acting"],"Actor. The Graduate, Rain Man, Tootsie.",["Seduced by Mrs. Robinson","Played an autistic savant counting cards","'I'm walkin' here!'"]],
+["Barbra Streisand","F",1942,"United States","New York",true,"1960s",["Music","Acting","Stage"],"Singer, actor, director. One of a handful of EGOT winners.",["Funny Girl, on Broadway and on film","Directed and starred in Yentl","Famously reluctant to perform live"]],
+["Lauren Bacall","F",1924,"United States","New York",false,"1940s",["Acting"],"Actor of the Hollywood studio era. To Have and Have Not.",["Told Bogart how to whistle","Married Humphrey Bogart at 20","Born Betty Joan Perske"]],
+["Kirk Douglas","M",1916,"United States","New York",false,"1950s",["Acting"],"Actor and producer. Spartacus, Paths of Glory.",["'I'm Spartacus'","Broke the blacklist by crediting Dalton Trumbo","Father of another famous actor"]],
+["Gal Gadot","F",1985,"Israel","",true,"2010s",["Acting"],"Israeli actor. Wonder Woman.",["Served in the IDF before Hollywood","Carried the Lasso of Truth","Former Miss Israel"]],
+["Jake Gyllenhaal","M",1980,"United States","California",true,"2000s",["Acting"],"Actor. Donnie Darko, Brokeback Mountain, Nightcrawler.",["Talked to a man in a rabbit suit","Filmed crime scenes for cash in LA","His sister is also a well-known actor"]],
+["Winona Ryder","F",1971,"United States","Minnesota",true,"1990s",["Acting"],"Actor. Heathers, Beetlejuice, Stranger Things.",["Croquet and cruelty in a dark high-school comedy","Named after a Minnesota town","Came roaring back hunting a Demogorgon"]],
+["Jeff Goldblum","M",1952,"United States","Pennsylvania",true,"1980s",["Acting"],"Actor. The Fly, Jurassic Park, Independence Day.",["Turned into an insect by a teleporter","Chaos theorist in a dinosaur park","Halting speech and serious jazz piano"]],
+["Daniel Radcliffe","M",1989,"United Kingdom","",true,"2000s",["Acting"],"British actor. Harry Potter.",["Cast at eleven in a wizarding franchise","British; later chose deliberately strange roles","Played a flatulent corpse in one film"]],
+["Sarah Jessica Parker","F",1965,"United States","Ohio",true,"1990s",["Acting","Television"],"Actor and producer. Sex and the City.",["Wrote a column about New York dating","Broadway child actor first","Married to Matthew Broderick"]],
+["Leonard Nimoy","M",1931,"United States","Massachusetts",false,"1960s",["Acting","Television"],"Actor and director. Spock on Star Trek.",["Based a famous hand salute on a priestly blessing","Half-Vulcan","Also a director and photographer"]],
+["William Shatner","M",1931,"Canada","",true,"1960s",["Acting","Television"],"Canadian actor. Captain Kirk on Star Trek.",["Canadian; commanded a starship","Went to actual space in his nineties","Later played a lawyer named Denny Crane"]],
+["Bea Arthur","F",1922,"United States","New York",false,"1970s",["Acting","Television","Comedy","Stage"],"Actor. Maude and The Golden Girls.",["Deep voice, towering presence, sitcom matriarch","Played Dorothy in Miami","Her first sitcom spun off from All in the Family"]],
+["Peter Falk","M",1927,"United States","New York",false,"1970s",["Acting","Television"],"Actor. The rumpled detective in Columbo.",["Glass eye, rumpled raincoat","'Just one more thing…'","Also the grandfather in The Princess Bride"]],
+["Elizabeth Taylor","F",1932,"United Kingdom","",false,"1950s",["Acting"],"Actor and AIDS activist. Converted to Judaism in 1959.",["Violet eyes and eight marriages","Converted before marrying Eddie Fisher","Early and forceful AIDS fundraiser"]],
+
+["Jerry Seinfeld","M",1954,"United States","New York",true,"1990s",["Comedy","Television","Acting"],"Stand-up comedian and co-creator of Seinfeld.",["A show about nothing","Obsessed with cereal and Porsches","Later drove comedians around for coffee"]],
+["Larry David","M",1947,"United States","New York",true,"1990s",["Comedy","Television","Writing"],"Co-creator of Seinfeld; creator and star of Curb Your Enthusiasm.",["Pretty, pretty, pretty good","Co-created a nothing-show, then played himself","Bald, bespectacled, perpetually aggrieved"]],
+["Jon Stewart","M",1962,"United States","New York",true,"1990s",["Comedy","Television"],"Comedian and host of The Daily Show. Born Jonathan Stuart Leibowitz.",["Fake news anchor, real influence","Born Leibowitz in New Jersey's suburbs","Lobbied Congress for 9/11 first responders"]],
+["Adam Sandler","M",1966,"United States","New York",true,"1990s",["Comedy","Acting"],"Comedian and actor. SNL, Happy Gilmore, Uncut Gems.",["Sang a holiday song listing famous Jews on SNL","Golf, hockey, and a lot of yelling","Dramatic turn in a diamond-district thriller"]],
+["Seth Rogen","M",1982,"Canada","",true,"2000s",["Comedy","Acting","Writing"],"Canadian comedian, actor, and screenwriter.",["Canadian; unmistakable laugh","Started writing a stoner comedy as a teenager","Also runs a cannabis and ceramics company"]],
+["Mel Brooks","M",1926,"United States","New York",true,"1960s",["Comedy","Film","Writing"],"Writer and director. The Producers, Blazing Saddles.",["A musical about a deliberate Broadway flop","Springtime for Hitler","EGOT winner; married to Anne Bancroft"]],
+["Joan Rivers","F",1933,"United States","New York",false,"1960s",["Comedy","Television","Stage"],"Stand-up comedian and talk show host.",["'Can we talk?'","Invented the red-carpet interview","First woman to host a network late-night show"]],
+["Rodney Dangerfield","M",1921,"United States","New York",false,"1970s",["Comedy","Stage"],"Stand-up comedian. He got no respect.",["Tugged at his tie between every punchline","'I don't get no respect'","Sold aluminum siding before making it at 40"]],
+["Gilda Radner","F",1946,"United States","Michigan",false,"1970s",["Comedy","Television"],"Original cast member of Saturday Night Live.",["Roseanne Roseannadanna","Original Not Ready For Prime Time Player","Married Gene Wilder; died of ovarian cancer"]],
+["Sarah Silverman","F",1970,"United States","New Hampshire",true,"2000s",["Comedy","Television"],"Stand-up comedian, actor, and writer.",["Deadpan delivery of appalling lines","Had her own Comedy Central program","Her sister is a rabbi in Jerusalem"]],
+["Andy Kaufman","M",1949,"United States","New York",false,"1970s",["Comedy","Television"],"Performance artist and comedian. Taxi, Carnegie Hall.",["Wrestled women as a villain","Foreign Man on a sitcom about cab drivers","Plenty of people still doubt the death"]],
+["Lenny Bruce","M",1925,"United States","New York",false,"1950s",["Comedy","Stage"],"Stand-up comedian tried repeatedly on obscenity charges.",["Arrested over and over for his act","Posthumously pardoned by New York State","Died of an overdose at forty"]],
+["Groucho Marx","M",1890,"United States","New York",false,"pre-1940",["Comedy","Acting"],"Marx Brother and host of You Bet Your Life.",["Greasepaint mustache and a cigar","One of five brothers","Hosted a quiz show for years"]],
+["Woody Allen","M",1935,"United States","New York",true,"1970s",["Comedy","Film","Writing"],"Filmmaker and comedian. Annie Hall, Manhattan.",["Neurotic New Yorker with a clarinet","Won Best Picture for a romance about a singer","Deeply divisive later life"]],
+["Amy Schumer","F",1981,"United States","New York",true,"2010s",["Comedy","Acting"],"Stand-up comedian and actor. Trainwreck.",["Sketch show under her own name","Wrote and starred in a rom-com about a mess","Related to a US senator"]],
+
+["Bob Dylan","M",1941,"United States","Minnesota",true,"1960s",["Music","Writing"],"Songwriter. Nobel laureate in Literature. Born Robert Zimmerman.",["Went electric at Newport","Born Zimmerman on the Iron Range","Won a Nobel Prize in Literature"]],
+["Leonard Cohen","M",1934,"Canada","",false,"1960s",["Music","Writing"],"Canadian songwriter and poet. Hallelujah, Suzanne.",["Canadian poet who took up singing late","Wrote a much-covered song built on a psalm","Spent years in a Zen monastery"]],
+["Amy Winehouse","F",1983,"United Kingdom","",false,"2000s",["Music"],"British soul singer and songwriter. Back to Black.",["Beehive and winged eyeliner","Refused to go to rehab","Died at 27 in Camden"]],
+["Paul Simon","M",1941,"United States","New Jersey",true,"1960s",["Music"],"Songwriter. Half of Simon & Garfunkel; Graceland.",["Half of a folk-rock duo","Recorded a landmark album with South African musicians","Wrote about a bridge over troubled water"]],
+["Art Garfunkel","M",1941,"United States","New York",true,"1960s",["Music"],"Singer. The other half of Simon & Garfunkel.",["The tall one with the high voice","Sang lead on the duo's biggest hit","Later taught math and walked across countries"]],
+["Lou Reed","M",1942,"United States","New York",false,"1960s",["Music"],"Frontman of The Velvet Underground.",["Fronted the band with the banana album cover","Wrote about a walk on the wild side","Married Laurie Anderson"]],
+["Carole King","F",1942,"United States","New York",true,"1960s",["Music"],"Songwriter. Brill Building hitmaker; Tapestry.",["Brill Building songwriter first","Tapestry sold tens of millions","Wrote hits for the Shirelles and Aretha Franklin"]],
+["Billy Joel","M",1949,"United States","New York",true,"1970s",["Music"],"Piano-driven songwriter. Piano Man, The Stranger.",["Long Island piano man","Sang a rapid-fire list of postwar history","Long residency at Madison Square Garden"]],
+["Gene Simmons","M",1949,"Israel","",true,"1970s",["Music"],"Bassist and co-founder of KISS. Born Chaim Witz.",["Born in Haifa as Chaim Witz","Face paint and an extremely long tongue","Plays bass in a band full of pyrotechnics"]],
+["George Gershwin","M",1898,"United States","New York",false,"pre-1940",["Music"],"Composer. Rhapsody in Blue, Porgy and Bess.",["Blended jazz with the concert hall","Wrote a folk opera set on Catfish Row","Died at 38 of a brain tumor"]],
+["Irving Berlin","M",1888,"Russia / USSR","",false,"pre-1940",["Music"],"Songwriter. God Bless America, White Christmas.",["Born in the Russian Empire; wrote America's second anthem","Could only play the piano in one key","Also wrote the biggest Christmas song ever"]],
+["Itzhak Perlman","M",1945,"Israel","",true,"1960s",["Music"],"Violinist. Soloist on the Schindler's List score.",["Polio survivor who performs seated","Israeli-born violinist","Soloed on a Holocaust film score"]],
+["Drake","M",1986,"Canada","",true,"2010s",["Music"],"Canadian rapper and singer. Had a bar mitzvah in Toronto.",["Started on a Canadian teen drama","Had a bar mitzvah in Toronto","Best-selling rapper of the streaming era"]],
+["Barry Manilow","M",1943,"United States","New York",true,"1970s",["Music"],"Singer and songwriter. Mandy, Copacabana.",["Wrote the jingles before the ballads","Copacabana","Brooklyn-born easy-listening institution"]],
+["Bette Midler","F",1945,"United States","Hawaii",true,"1970s",["Music","Acting","Comedy","Stage"],"Singer and actor. The Divine Miss M.",["Got her start performing at a New York bathhouse","Born in Honolulu","Beaches, and 'wind beneath my wings'"]],
+
+["Ruth Bader Ginsburg","F",1933,"United States","New York",false,"1990s",["Law","Politics"],"Supreme Court justice and women's rights litigator.",["Famous dissents and elaborate collars","Argued sex-discrimination cases in the 1970s","Second woman on the Supreme Court"]],
+["Bernie Sanders","M",1941,"United States","New York",true,"2010s",["Politics"],"Senator from Vermont and two-time presidential candidate.",["Brooklyn accent, Vermont politics","Democratic socialist who ran twice for president","Mittens at an inauguration"]],
+["Henry Kissinger","M",1923,"Germany","",false,"1970s",["Politics","Academia"],"Secretary of State and national security adviser.",["Fled Nazi Germany as a teenager","Shuttle diplomacy and a contested Nobel","Served both Nixon and Ford"]],
+["Michael Bloomberg","M",1942,"United States","Massachusetts",true,"2000s",["Politics","Business"],"Founder of Bloomberg LP and mayor of New York City.",["Financial data terminals carry his name","Three terms running New York City","Spent a fortune on a very short 2020 campaign"]],
+["Golda Meir","F",1898,"Russia / USSR","",false,"1960s",["Politics"],"Fourth prime minister of Israel.",["Grew up in Milwaukee","Led Israel through the 1973 war","Called an Iron Lady before Thatcher was"]],
+["Benjamin Netanyahu","M",1949,"Israel","",true,"1990s",["Politics"],"Longest-serving prime minister of Israel.",["Educated at MIT","Israel's longest-serving leader","His brother died leading the Entebbe raid"]],
+["Chuck Schumer","M",1950,"United States","New York",true,"2000s",["Politics"],"Senate leader from New York.",["Brooklyn-born, Harvard-educated","Senate Democratic leader","Known for Sunday morning press conferences"]],
+["Theodor Herzl","M",1860,"Hungary","",false,"pre-1940",["Politics","Journalism","Activism"],"Journalist and founder of political Zionism.",["Covered the Dreyfus affair as a correspondent","Wrote Der Judenstaat","Convened the First Zionist Congress in Basel"]],
+["David Ben-Gurion","M",1886,"Poland","",false,"1940s",["Politics"],"First prime minister of Israel.",["Read the declaration aloud in Tel Aviv in 1948","White hair and a retirement in the Negev","Poland-born labor Zionist"]],
+["Louis Brandeis","M",1856,"United States","Kentucky",false,"pre-1940",["Law"],"First Jewish justice of the U.S. Supreme Court.",["Known as the people's lawyer","First of his faith on the Supreme Court","A Massachusetts university carries his name"]],
+
+["Albert Einstein","M",1879,"Germany","",false,"pre-1940",["Science","Academia"],"Physicist. Relativity, and the most famous equation in science.",["Worked as a patent clerk in Bern","Declined the presidency of Israel","Wild hair; E=mc²"]],
+["Sigmund Freud","M",1856,"Austria","",false,"pre-1940",["Science","Academia","Writing"],"Founder of psychoanalysis.",["Couch, cigars, and dreams","Fled Vienna for London in 1938","Gave us the ego and the id"]],
+["Jonas Salk","M",1914,"United States","New York",false,"1950s",["Science"],"Developed the first widely used polio vaccine.",["Refused to patent his discovery","Ended a summer terror for American parents","Founded an institute in La Jolla"]],
+["Richard Feynman","M",1918,"United States","New York",false,"1960s",["Science","Academia"],"Physicist, Nobel laureate, and bongo player.",["Bongo-playing Nobel physicist","Explained an o-ring failure with a glass of ice water","Cracked safes at Los Alamos for fun"]],
+["Carl Sagan","M",1934,"United States","New York",false,"1980s",["Science","Television","Writing"],"Astronomer and host of Cosmos.",["Billions and billions","Hosted a thirteen-part PBS series","Pushed to turn a probe around for one photo"]],
+["Noam Chomsky","M",1928,"United States","Pennsylvania",true,"1960s",["Academia","Activism","Writing"],"Linguist and political critic.",["Transformed linguistics from MIT","Co-wrote Manufacturing Consent","Relentless critic of American foreign policy"]],
+["J. Robert Oppenheimer","M",1904,"United States","New York",false,"1940s",["Science","Academia"],"Physicist who led the Los Alamos laboratory.",["Quoted the Bhagavad Gita after a test","Ran a secret laboratory in the desert","Stripped of his security clearance in 1954"]],
+["Hannah Arendt","F",1906,"Germany","",false,"1960s",["Academia","Writing"],"Political theorist. The Origins of Totalitarianism.",["Covered the Eichmann trial for The New Yorker","Coined 'the banality of evil'","Fled Germany, taught in New York"]],
+["Karl Marx","M",1818,"Germany","",false,"pre-1940",["Academia","Writing","Politics"],"Philosopher and economist, born to a family of rabbis.",["Buried in Highgate Cemetery","Wrote a manifesto with Engels","Descended from rabbis, baptized as a boy"]],
+["Steven Pinker","M",1954,"Canada","",true,"2000s",["Academia","Science","Writing"],"Cognitive scientist and popular science author.",["Canadian-born Harvard psychologist","Argues violence has declined over centuries","Distinctive mane of curly hair"]],
+
+["Mark Zuckerberg","M",1984,"United States","New York",true,"2000s",["Tech","Business"],"Co-founder and CEO of Facebook, now Meta.",["Dropped out of Harvard in 2004","Hoodie, and a lawsuit-heavy origin story","Renamed his company after a virtual world"]],
+["Sergey Brin","M",1973,"Russia / USSR","",true,"2000s",["Tech","Business"],"Co-founder of Google. Born in Moscow.",["Emigrated from Moscow at six","Co-wrote the PageRank paper at Stanford","Later chased airships and flying cars"]],
+["Larry Page","M",1973,"United States","Michigan",true,"2000s",["Tech","Business"],"Co-founder of Google.",["The other Stanford co-founder","Named the parent holding company Alphabet","Michigan-born son of a computer science professor"]],
+["Larry Ellison","M",1944,"United States","New York",true,"1990s",["Tech","Business"],"Co-founder of Oracle.",["Built a database company on a CIA contract","Owns most of a Hawaiian island","Serious competitive sailor"]],
+["Michael Dell","M",1965,"United States","Texas",true,"1990s",["Tech","Business"],"Founder of Dell Technologies.",["Built PCs in a dorm room","Took his company private, then public again","Austin, Texas"]],
+["Howard Schultz","M",1953,"United States","New York",true,"1990s",["Business"],"Longtime CEO of Starbucks.",["Brought Italian espresso bars to America","Grew up in Brooklyn public housing","Flirted with a presidential run"]],
+["Ralph Lauren","M",1939,"United States","New York",true,"1970s",["Business","Art"],"Fashion designer. Born Ralph Lifshitz.",["Born Lifshitz in the Bronx","Started out selling wide ties","Logo is a polo player"]],
+["Levi Strauss","M",1829,"Germany","",false,"pre-1940",["Business"],"Dry goods merchant who patented riveted denim work pants.",["Bavarian immigrant to Gold Rush San Francisco","Put rivets at the stress points","His name is probably on your jeans"]],
+["Estée Lauder","F",1908,"United States","New York",false,"1950s",["Business"],"Cosmetics entrepreneur.",["Built an empire on free samples","Queens-born; sold face cream door to door","Youth-Dew"]],
+["Sheryl Sandberg","F",1969,"United States","Washington DC",true,"2010s",["Tech","Business","Writing"],"COO of Facebook and author of Lean In.",["Went from Google to Facebook","Told women to lean in","Widowed young; wrote a book about grief"]],
+
+["Sandy Koufax","M",1935,"United States","New York",true,"1960s",["Sports"],"Dodgers pitcher who sat out a World Series game on Yom Kippur.",["Four no-hitters in six seasons","Skipped a World Series start for a holy day","Retired at thirty with an arthritic elbow"]],
+["Mark Spitz","M",1950,"United States","California",true,"1970s",["Sports"],"Swimmer. Seven golds at the 1972 Munich Olympics.",["Swam with a mustache","Seven golds at a single Olympics","Munich, 1972"]],
+["Hank Greenberg","M",1911,"United States","New York",false,"pre-1940",["Sports"],"Detroit Tigers slugger and first Jewish superstar in baseball.",["Slugger for Detroit in the 1930s","Chased Babe Ruth's home run record","Lost prime years to wartime service"]],
+["Aly Raisman","F",1994,"United States","Massachusetts",true,"2010s",["Sports","Activism"],"Olympic gymnast and captain of the Fierce Five.",["Floor routine set to Hava Nagila","Captained two Olympic gymnastics teams","Testified against a team doctor"]],
+["Bobby Fischer","M",1943,"United States","Illinois",false,"1970s",["Sports"],"Chess world champion who beat Spassky in 1972.",["Beat the Soviets in Reykjavik","Chess prodigy who became a recluse","Renounced his American citizenship"]],
+
+["Philip Roth","M",1933,"United States","New Jersey",false,"1960s",["Writing"],"Novelist. Portnoy's Complaint, American Pastoral.",["The novelist of Newark","A scandalous 1969 monologue novel","Invented an alter ego named Zuckerman"]],
+["Franz Kafka","M",1883,"Czechia","",false,"pre-1940",["Writing"],"Novelist of bureaucratic dread. The Trial, The Metamorphosis.",["Insurance clerk in Prague","Asked that his manuscripts be burned","A man wakes up as an insect"]],
+["Anne Frank","F",1929,"Germany","",false,"1950s",["Writing"],"Diarist who hid in an Amsterdam annex until 1944.",["Wrote in a red-checked notebook","Hid behind a bookcase in Amsterdam","Died at Bergen-Belsen at fifteen"]],
+["Elie Wiesel","M",1928,"Romania","",false,"1960s",["Writing","Activism"],"Holocaust survivor, author of Night, Nobel Peace laureate.",["Survived Auschwitz and Buchenwald","Wrote a slim memoir called Night","Nobel Peace Prize, 1986"]],
+["Isaac Asimov","M",1920,"Russia / USSR","",false,"1950s",["Writing","Science"],"Science fiction writer. Foundation, I, Robot.",["Wrote three laws for robots","Born near Smolensk, raised in Brooklyn","Wrote or edited hundreds of books"]],
+["Allen Ginsberg","M",1926,"United States","New Jersey",false,"1950s",["Writing"],"Beat poet. Howl.",["Read a long poem in San Francisco in 1955","Beat generation; Buddhist chanting","An obscenity trial over his best-known work"]],
+["Nora Ephron","F",1941,"United States","New York",false,"1980s",["Writing","Film"],"Essayist and filmmaker. When Harry Met Sally, Sleepless in Seattle.",["'I'll have what she's having'","Started as a journalist and essayist","Wrote an essay collection about her neck"]],
+
+["Steven Spielberg","M",1946,"United States","Ohio",true,"1970s",["Film"],"Director. Jaws, E.T., Schindler's List.",["A shark emptied the beaches in 1975","Black-and-white film about a German industrialist","Co-founded DreamWorks"]],
+["Stanley Kubrick","M",1928,"United States","New York",false,"1960s",["Film"],"Director. 2001, Dr. Strangelove, The Shining.",["Bronx photographer turned obsessive director","A bone cuts to a spacecraft","Shot a period film by candlelight"]],
+["Joel Coen","M",1954,"United States","Minnesota",true,"1990s",["Film","Writing"],"Half of the Coen brothers. Fargo, The Big Lebowski.",["Works with his brother","A wood chipper in Minnesota","The rug really tied the room together"]],
+["Billy Wilder","M",1906,"Poland","",false,"1940s",["Film","Writing"],"Director and screenwriter. Some Like It Hot, Sunset Boulevard.",["Fled Berlin and conquered Hollywood","'Nobody's perfect'","A dead man narrates one of his films"]],
+["Judd Apatow","M",1967,"United States","New York",true,"2000s",["Film","Comedy"],"Director and producer. Freaks and Geeks, Knocked Up.",["Made a beloved one-season high school show","Produced a whole generation of comedies","Married to Leslie Mann"]],
+
+["Harry Houdini","M",1874,"Hungary","",false,"pre-1940",["Stage"],"Escape artist. Born Erik Weisz, son of a rabbi.",["Born Erik Weisz in Budapest","Escaped a water torture cell","Died on Halloween of a ruptured appendix"]],
+["Marc Chagall","M",1887,"Russia / USSR","",false,"pre-1940",["Art"],"Painter of floating figures and shtetl dreamscapes.",["Floating lovers over Vitebsk","Stained glass windows in Jerusalem","Painted the ceiling of the Paris Opera"]],
+["Ayn Rand","F",1905,"Russia / USSR","",false,"1950s",["Writing","Academia"],"Novelist and philosopher. Atlas Shrugged.",["Fled the Bolsheviks for Hollywood","Founded a philosophy called Objectivism","A sixty-page radio speech inside a novel"]],
+["Leon Trotsky","M",1879,"Russia / USSR","",false,"pre-1940",["Politics","Writing"],"Revolutionary and founder of the Red Army. Born Lev Bronstein.",["Born Bronstein in what is now Ukraine","Founded the Red Army","Killed with an ice axe in Mexico"]],
+];
+
+/* ---- GUESS-ONLY POOL: valid guesses, never the answer ----
+   [name, gender, year, country, USstate, living, era, fields] */
+const EXTRA = [
+["Ben Stiller","M",1965,"United States","New York",true,"1990s",["Comedy","Acting","Film"]],
+["Jason Alexander","M",1959,"United States","New Jersey",true,"1990s",["Acting","Comedy","Television"]],
+["Julia Louis-Dreyfus","F",1961,"United States","New York",true,"1990s",["Comedy","Acting","Television"]],
+["Jerry Stiller","M",1927,"United States","New York",false,"1970s",["Comedy","Acting"]],
+["Goldie Hawn","F",1945,"United States","Washington DC",true,"1970s",["Acting","Comedy"]],
+["Gwyneth Paltrow","F",1972,"United States","California",true,"1990s",["Acting","Business"]],
+["Rachel Weisz","F",1970,"United Kingdom","",true,"2000s",["Acting"]],
+["Lisa Kudrow","F",1963,"United States","California",true,"1990s",["Acting","Comedy","Television"]],
+["David Schwimmer","M",1966,"United States","New York",true,"1990s",["Acting","Comedy","Television"]],
+["Paul Rudd","M",1969,"United States","New Jersey",true,"2000s",["Acting","Comedy"]],
+["James Franco","M",1978,"United States","California",true,"2000s",["Acting"]],
+["Dave Franco","M",1985,"United States","California",true,"2010s",["Acting"]],
+["Joseph Gordon-Levitt","M",1981,"United States","California",true,"2000s",["Acting"]],
+["Andrew Garfield","M",1983,"United States","California",true,"2010s",["Acting"]],
+["Logan Lerman","M",1992,"United States","California",true,"2010s",["Acting"]],
+["Alicia Silverstone","F",1976,"United States","California",true,"1990s",["Acting"]],
+["Mila Kunis","F",1983,"Ukraine","",true,"2000s",["Acting"]],
+["Sacha Baron Cohen","M",1971,"United Kingdom","",true,"2000s",["Comedy","Acting"]],
+["Simon Helberg","M",1980,"United States","California",true,"2000s",["Acting","Comedy"]],
+["Zoë Kravitz","F",1988,"United States","California",true,"2010s",["Acting"]],
+["Lenny Kravitz","M",1964,"United States","New York",true,"1990s",["Music"]],
+["Jonah Hill","M",1983,"United States","California",true,"2000s",["Acting","Comedy"]],
+["Michael Douglas","M",1944,"United States","New Jersey",true,"1970s",["Acting","Film"]],
+["Adrien Brody","M",1973,"United States","New York",true,"2000s",["Acting"]],
+["Jesse Eisenberg","M",1983,"United States","New York",true,"2000s",["Acting","Film"]],
+["Rashida Jones","F",1976,"United States","California",true,"2000s",["Acting","Television"]],
+["Tony Curtis","M",1925,"United States","New York",false,"1950s",["Acting"]],
+["Edward G. Robinson","M",1893,"Romania","",false,"pre-1940",["Acting"]],
+["Danny Kaye","M",1911,"United States","New York",false,"1940s",["Acting","Comedy","Stage"]],
+["Jack Benny","M",1894,"United States","Illinois",false,"pre-1940",["Comedy","Television"]],
+["George Burns","M",1896,"United States","New York",false,"pre-1940",["Comedy","Acting"]],
+["Milton Berle","M",1908,"United States","New York",false,"1950s",["Comedy","Television"]],
+["Sid Caesar","M",1922,"United States","New York",false,"1950s",["Comedy","Television"]],
+["Carl Reiner","M",1922,"United States","New York",false,"1950s",["Comedy","Television","Film"]],
+["Rob Reiner","M",1947,"United States","New York",true,"1970s",["Film","Acting"]],
+["Don Rickles","M",1926,"United States","New York",false,"1960s",["Comedy","Stage"]],
+["Shelley Winters","F",1920,"United States","Missouri",false,"1950s",["Acting"]],
+["Zero Mostel","M",1915,"United States","New York",false,"1960s",["Acting","Stage"]],
+["Chaim Topol","M",1935,"Israel","",false,"1970s",["Acting","Stage"]],
+["Walter Matthau","M",1920,"United States","New York",false,"1960s",["Acting"]],
+["Gene Wilder","M",1933,"United States","Wisconsin",false,"1970s",["Acting","Comedy"]],
+["Harvey Keitel","M",1939,"United States","New York",true,"1970s",["Acting"]],
+["Richard Dreyfuss","M",1947,"United States","New York",true,"1970s",["Acting"]],
+["Henry Winkler","M",1945,"United States","New York",true,"1970s",["Acting","Television"]],
+["Billy Crystal","M",1948,"United States","New York",true,"1980s",["Comedy","Acting"]],
+["Albert Brooks","M",1947,"United States","California",true,"1980s",["Comedy","Film","Acting"]],
+["Garry Shandling","M",1949,"United States","Illinois",false,"1990s",["Comedy","Television"]],
+["Jerry Lewis","M",1926,"United States","New Jersey",false,"1950s",["Comedy","Acting"]],
+["Marty Feldman","M",1934,"United Kingdom","",false,"1970s",["Comedy","Acting"]],
+["Peter Sellers","M",1925,"United Kingdom","",false,"1960s",["Comedy","Acting"]],
+["Fran Drescher","F",1957,"United States","New York",true,"1990s",["Acting","Television","Comedy"]],
+["Debra Messing","F",1968,"United States","New York",true,"1990s",["Acting","Television"]],
+["Andy Samberg","M",1978,"United States","California",true,"2000s",["Comedy","Acting"]],
+["Ilana Glazer","F",1987,"United States","New York",true,"2010s",["Comedy","Television"]],
+["Abbi Jacobson","F",1984,"United States","Pennsylvania",true,"2010s",["Comedy","Television"]],
+["Rachel Bloom","F",1987,"United States","California",true,"2010s",["Comedy","Television"]],
+["Marc Maron","M",1963,"United States","New Jersey",true,"2010s",["Comedy"]],
+["Richard Lewis","M",1947,"United States","New York",false,"1980s",["Comedy","Acting"]],
+["Bob Saget","M",1956,"United States","Pennsylvania",false,"1990s",["Comedy","Television"]],
+["Howard Stern","M",1954,"United States","New York",true,"1990s",["Journalism","Comedy"]],
+["Larry King","M",1933,"United States","New York",false,"1990s",["Journalism","Television"]],
+["Barbara Walters","F",1929,"United States","Massachusetts",false,"1970s",["Journalism","Television"]],
+["Wolf Blitzer","M",1948,"Germany","",true,"1990s",["Journalism","Television"]],
+["Ted Koppel","M",1940,"United Kingdom","",true,"1980s",["Journalism","Television"]],
+["Mike Wallace","M",1918,"United States","Massachusetts",false,"1960s",["Journalism","Television"]],
+["Carl Bernstein","M",1944,"United States","Washington DC",true,"1970s",["Journalism","Writing"]],
+["Walter Lippmann","M",1889,"United States","New York",false,"pre-1940",["Journalism","Writing"]],
+["Ruth Westheimer","F",1928,"Germany","",false,"1980s",["Television","Academia"]],
+["Judith Sheindlin","F",1942,"United States","New York",true,"1990s",["Television","Law"]],
+["Jerry Springer","M",1944,"United Kingdom","",false,"1990s",["Television","Politics"]],
+["Norman Lear","M",1922,"United States","Connecticut",false,"1970s",["Television","Writing"]],
+["Aaron Sorkin","M",1961,"United States","New York",true,"1990s",["Writing","Film","Television"]],
+["David Simon","M",1960,"United States","Washington DC",true,"2000s",["Television","Journalism"]],
+["Amy Sherman-Palladino","F",1966,"United States","California",true,"2000s",["Television","Writing"]],
+["Adam Levine","M",1979,"United States","California",true,"2000s",["Music"]],
+["Adam Yauch","M",1964,"United States","New York",false,"1980s",["Music"]],
+["Adam Horovitz","M",1966,"United States","New York",true,"1980s",["Music"]],
+["Michael Diamond","M",1965,"United States","New York",true,"1980s",["Music"]],
+["Geddy Lee","M",1953,"Canada","",true,"1970s",["Music"]],
+["Neil Diamond","M",1941,"United States","New York",true,"1960s",["Music"]],
+["Randy Newman","M",1943,"United States","California",true,"1970s",["Music"]],
+["Burt Bacharach","M",1928,"United States","Missouri",false,"1960s",["Music"]],
+["Carly Simon","F",1943,"United States","New York",true,"1970s",["Music"]],
+["Regina Spektor","F",1980,"Russia / USSR","",true,"2000s",["Music"]],
+["Beck","M",1970,"United States","California",true,"1990s",["Music"]],
+["Michael Bolton","M",1953,"United States","Connecticut",true,"1990s",["Music"]],
+["Leonard Bernstein","M",1918,"United States","Massachusetts",false,"1950s",["Music"]],
+["Aaron Copland","M",1900,"United States","New York",false,"pre-1940",["Music"]],
+["Benny Goodman","M",1909,"United States","Illinois",false,"pre-1940",["Music"]],
+["Artie Shaw","M",1910,"United States","New York",false,"pre-1940",["Music"]],
+["Richard Rodgers","M",1902,"United States","New York",false,"pre-1940",["Music"]],
+["Oscar Hammerstein II","M",1895,"United States","New York",false,"pre-1940",["Music","Writing"]],
+["Stephen Sondheim","M",1930,"United States","New York",false,"1950s",["Music","Writing"]],
+["Marvin Hamlisch","M",1944,"United States","New York",false,"1970s",["Music"]],
+["Philip Glass","M",1937,"United States","Maryland",true,"1970s",["Music"]],
+["Jascha Heifetz","M",1901,"Lithuania","",false,"pre-1940",["Music"]],
+["Vladimir Horowitz","M",1903,"Ukraine","",false,"pre-1940",["Music"]],
+["Arthur Rubinstein","M",1887,"Poland","",false,"pre-1940",["Music"]],
+["Yehudi Menuhin","M",1916,"United States","New York",false,"1940s",["Music"]],
+["Daniel Barenboim","M",1942,"Argentina","",true,"1970s",["Music"]],
+["Gustav Mahler","M",1860,"Czechia","",false,"pre-1940",["Music"]],
+["Felix Mendelssohn","M",1809,"Germany","",false,"pre-1940",["Music"]],
+["Kurt Weill","M",1900,"Germany","",false,"pre-1940",["Music"]],
+["Serge Gainsbourg","M",1928,"France","",false,"1960s",["Music"]],
+["Sidney Lumet","M",1924,"United States","Pennsylvania",false,"1960s",["Film"]],
+["Roman Polanski","M",1933,"France","",true,"1960s",["Film"]],
+["Mike Nichols","M",1931,"Germany","",false,"1960s",["Film","Comedy"]],
+["Ernst Lubitsch","M",1892,"Germany","",false,"pre-1940",["Film"]],
+["Fritz Lang","M",1890,"Austria","",false,"pre-1940",["Film"]],
+["Otto Preminger","M",1905,"Ukraine","",false,"1940s",["Film"]],
+["Darren Aronofsky","M",1969,"United States","New York",true,"1990s",["Film"]],
+["Michael Mann","M",1943,"United States","Illinois",true,"1990s",["Film"]],
+["Oliver Stone","M",1946,"United States","New York",true,"1980s",["Film","Writing"]],
+["David Cronenberg","M",1943,"Canada","",true,"1980s",["Film"]],
+["Ivan Reitman","M",1946,"Slovakia","",false,"1980s",["Film"]],
+["Jason Reitman","M",1977,"Canada","",true,"2000s",["Film"]],
+["Ethan Coen","M",1957,"United States","Minnesota",true,"1990s",["Film","Writing"]],
+["Todd Phillips","M",1970,"United States","New York",true,"2000s",["Film"]],
+["Eli Roth","M",1972,"United States","Massachusetts",true,"2000s",["Film"]],
+["Sam Raimi","M",1959,"United States","Michigan",true,"1990s",["Film"]],
+["Harold Ramis","M",1944,"United States","Illinois",false,"1980s",["Film","Comedy","Acting"]],
+["Louis B. Mayer","M",1884,"Russia / USSR","",false,"pre-1940",["Business","Film"]],
+["Samuel Goldwyn","M",1879,"Poland","",false,"pre-1940",["Business","Film"]],
+["Harry Cohn","M",1891,"United States","New York",false,"pre-1940",["Business","Film"]],
+["Adolph Zukor","M",1873,"Hungary","",false,"pre-1940",["Business","Film"]],
+["David O. Selznick","M",1902,"United States","Pennsylvania",false,"1940s",["Film","Business"]],
+["Irving Thalberg","M",1899,"United States","New York",false,"pre-1940",["Film","Business"]],
+["Lew Wasserman","M",1913,"United States","Ohio",false,"1960s",["Business","Film"]],
+["Jeffrey Katzenberg","M",1950,"United States","New York",true,"1990s",["Business","Film"]],
+["David Geffen","M",1943,"United States","New York",true,"1980s",["Business","Music"]],
+["Harvey Weinstein","M",1952,"United States","New York",true,"1990s",["Film","Business"]],
+["Sumner Redstone","M",1923,"United States","Massachusetts",false,"1990s",["Business"]],
+["Barry Diller","M",1942,"United States","California",true,"1990s",["Business","Television"]],
+["Andy Grove","M",1936,"Hungary","",false,"1990s",["Tech","Business"]],
+["Steve Ballmer","M",1956,"United States","Michigan",true,"1990s",["Tech","Business"]],
+["Michael Eisner","M",1942,"United States","New York",true,"1990s",["Business","Film"]],
+["Carl Icahn","M",1936,"United States","New York",true,"1980s",["Business"]],
+["George Soros","M",1930,"Hungary","",true,"1990s",["Business","Activism"]],
+["Bernie Madoff","M",1938,"United States","New York",false,"2000s",["Business"]],
+["Sheldon Adelson","M",1933,"United States","Massachusetts",false,"2000s",["Business","Politics"]],
+["Ben Cohen","M",1951,"United States","New York",true,"1980s",["Business"]],
+["Jerry Greenfield","M",1951,"United States","New York",true,"1980s",["Business"]],
+["Marc Benioff","M",1964,"United States","California",true,"2000s",["Tech","Business"]],
+["Jan Koum","M",1976,"Ukraine","",true,"2010s",["Tech","Business"]],
+["Susan Wojcicki","F",1968,"United States","California",false,"2010s",["Tech","Business"]],
+["Anne Wojcicki","F",1973,"United States","California",true,"2000s",["Tech","Business"]],
+["Michael Milken","M",1946,"United States","California",true,"1980s",["Business"]],
+["Lloyd Blankfein","M",1954,"United States","New York",true,"2000s",["Business"]],
+["Alan Greenspan","M",1926,"United States","New York",true,"1990s",["Politics","Business","Academia"]],
+["Janet Yellen","F",1946,"United States","New York",true,"2010s",["Politics","Academia"]],
+["Ben Bernanke","M",1953,"United States","Georgia",true,"2000s",["Politics","Academia"]],
+["Milton Friedman","M",1912,"United States","New York",false,"1970s",["Academia"]],
+["Paul Krugman","M",1953,"United States","New York",true,"2000s",["Academia","Journalism"]],
+["Joseph Stiglitz","M",1943,"United States","Indiana",true,"2000s",["Academia"]],
+["Daniel Kahneman","M",1934,"Israel","",false,"2000s",["Academia","Science"]],
+["Amos Tversky","M",1937,"Israel","",false,"1980s",["Academia","Science"]],
+["Howard Zinn","M",1922,"United States","New York",false,"1980s",["Academia","Writing","Activism"]],
+["Susan Sontag","F",1933,"United States","New York",false,"1960s",["Writing","Academia"]],
+["Betty Friedan","F",1921,"United States","Illinois",false,"1960s",["Writing","Activism"]],
+["Gloria Steinem","F",1934,"United States","Ohio",true,"1970s",["Journalism","Activism"]],
+["Emma Goldman","F",1869,"Lithuania","",false,"pre-1940",["Activism","Writing"]],
+["Rosa Luxemburg","F",1871,"Poland","",false,"pre-1940",["Politics","Writing"]],
+["Abbie Hoffman","M",1936,"United States","Massachusetts",false,"1960s",["Activism"]],
+["Jerry Rubin","M",1938,"United States","Ohio",false,"1960s",["Activism"]],
+["Bella Abzug","F",1920,"United States","New York",false,"1970s",["Politics","Activism"]],
+["Barney Frank","M",1940,"United States","New Jersey",true,"1990s",["Politics"]],
+["Rahm Emanuel","M",1959,"United States","Illinois",true,"2000s",["Politics"]],
+["Dianne Feinstein","F",1933,"United States","California",false,"1990s",["Politics"]],
+["Elena Kagan","F",1960,"United States","New York",true,"2010s",["Law","Politics"]],
+["Stephen Breyer","M",1938,"United States","California",true,"1990s",["Law"]],
+["Felix Frankfurter","M",1882,"Austria","",false,"1940s",["Law"]],
+["Benjamin Cardozo","M",1870,"United States","New York",false,"pre-1940",["Law"]],
+["Alan Dershowitz","M",1938,"United States","New York",true,"1990s",["Law","Academia"]],
+["Jared Kushner","M",1981,"United States","New Jersey",true,"2010s",["Business","Politics"]],
+["Harvey Milk","M",1930,"United States","New York",false,"1970s",["Politics","Activism"]],
+["Roy Cohn","M",1927,"United States","New York",false,"1950s",["Law","Politics"]],
+["Yitzhak Rabin","M",1922,"Israel","",false,"1990s",["Politics"]],
+["Shimon Peres","M",1923,"Poland","",false,"1990s",["Politics"]],
+["Menachem Begin","M",1913,"Belarus","",false,"1970s",["Politics"]],
+["Ariel Sharon","M",1928,"Israel","",false,"2000s",["Politics"]],
+["Ehud Barak","M",1942,"Israel","",true,"1990s",["Politics"]],
+["Moshe Dayan","M",1915,"Israel","",false,"1960s",["Politics"]],
+["Chaim Weizmann","M",1874,"Belarus","",false,"1940s",["Politics","Science"]],
+["Ze'ev Jabotinsky","M",1880,"Ukraine","",false,"pre-1940",["Politics","Writing"]],
+["Naftali Bennett","M",1972,"Israel","",true,"2020s",["Politics"]],
+["Yair Lapid","M",1963,"Israel","",true,"2010s",["Politics","Journalism"]],
+["Natan Sharansky","M",1948,"Ukraine","",true,"1980s",["Activism","Politics"]],
+["Simon Wiesenthal","M",1908,"Ukraine","",false,"1960s",["Activism"]],
+["Niels Bohr","M",1885,"Denmark","",false,"pre-1940",["Science","Academia"]],
+["Max Born","M",1882,"Poland","",false,"pre-1940",["Science","Academia"]],
+["Lise Meitner","F",1878,"Austria","",false,"pre-1940",["Science","Academia"]],
+["Edward Teller","M",1908,"Hungary","",false,"1950s",["Science","Academia"]],
+["Leo Szilard","M",1898,"Hungary","",false,"1940s",["Science"]],
+["John von Neumann","M",1903,"Hungary","",false,"1940s",["Science","Academia","Tech"]],
+["Paul Ehrlich","M",1854,"Poland","",false,"pre-1940",["Science"]],
+["Rosalind Franklin","F",1920,"United Kingdom","",false,"1950s",["Science"]],
+["Gertrude Elion","F",1918,"United States","New York",false,"1980s",["Science"]],
+["Rita Levi-Montalcini","F",1909,"Italy","",false,"1980s",["Science"]],
+["Selman Waksman","M",1888,"Ukraine","",false,"1950s",["Science"]],
+["Albert Sabin","M",1906,"Poland","",false,"1950s",["Science"]],
+["Baruch Spinoza","M",1632,"Netherlands","",false,"pre-1940",["Academia","Writing"]],
+["Maimonides","M",1138,"Spain","",false,"pre-1940",["Academia","Writing"]],
+["Emmy Noether","F",1882,"Germany","",false,"pre-1940",["Science","Academia"]],
+["Norbert Wiener","M",1894,"United States","Missouri",false,"1940s",["Science","Academia"]],
+["Stephen Jay Gould","M",1941,"United States","New York",false,"1980s",["Science","Writing"]],
+["Jared Diamond","M",1937,"United States","Massachusetts",true,"1990s",["Science","Writing"]],
+["Oliver Sacks","M",1933,"United Kingdom","",false,"1980s",["Science","Writing"]],
+["Marvin Minsky","M",1927,"United States","New York",false,"1960s",["Tech","Science","Academia"]],
+["Saul Bellow","M",1915,"Canada","",false,"1950s",["Writing"]],
+["Norman Mailer","M",1923,"United States","New Jersey",false,"1950s",["Writing","Journalism"]],
+["Joseph Heller","M",1923,"United States","New York",false,"1960s",["Writing"]],
+["J.D. Salinger","M",1919,"United States","New York",false,"1950s",["Writing"]],
+["Arthur Miller","M",1915,"United States","New York",false,"1940s",["Writing","Stage"]],
+["Neil Simon","M",1927,"United States","New York",false,"1960s",["Writing","Stage"]],
+["Tony Kushner","M",1956,"United States","New York",true,"1990s",["Writing","Stage"]],
+["Isaac Bashevis Singer","M",1902,"Poland","",false,"1970s",["Writing"]],
+["Sholem Aleichem","M",1859,"Ukraine","",false,"pre-1940",["Writing"]],
+["Primo Levi","M",1919,"Italy","",false,"1960s",["Writing","Science"]],
+["Boris Pasternak","M",1890,"Russia / USSR","",false,"1950s",["Writing"]],
+["Osip Mandelstam","M",1891,"Poland","",false,"pre-1940",["Writing"]],
+["Joseph Brodsky","M",1940,"Russia / USSR","",false,"1980s",["Writing"]],
+["Paul Celan","M",1920,"Romania","",false,"1960s",["Writing"]],
+["Amos Oz","M",1939,"Israel","",false,"1970s",["Writing"]],
+["David Grossman","M",1954,"Israel","",true,"1990s",["Writing"]],
+["Michael Chabon","M",1963,"United States","Washington DC",true,"1990s",["Writing"]],
+["Jonathan Safran Foer","M",1977,"United States","Washington DC",true,"2000s",["Writing"]],
+["Judy Blume","F",1938,"United States","New Jersey",true,"1970s",["Writing"]],
+["Maurice Sendak","M",1928,"United States","New York",false,"1960s",["Writing","Art"]],
+["Shel Silverstein","M",1930,"United States","Illinois",false,"1970s",["Writing","Art","Music"]],
+["Stan Lee","M",1922,"United States","New York",false,"1960s",["Writing","Art"]],
+["Jack Kirby","M",1917,"United States","New York",false,"1960s",["Art","Writing"]],
+["Art Spiegelman","M",1948,"Sweden","",true,"1980s",["Art","Writing"]],
+["Erica Jong","F",1942,"United States","New York",true,"1970s",["Writing"]],
+["Gertrude Stein","F",1874,"United States","Pennsylvania",false,"pre-1940",["Writing"]],
+["Dorothy Parker","F",1893,"United States","New Jersey",false,"pre-1940",["Writing"]],
+["Walter Benjamin","M",1892,"Germany","",false,"1960s",["Academia","Writing"]],
+["Martin Buber","M",1878,"Austria","",false,"1940s",["Academia","Writing"]],
+["Ludwig Wittgenstein","M",1889,"Austria","",false,"pre-1940",["Academia","Writing"]],
+["Edmund Husserl","M",1859,"Czechia","",false,"pre-1940",["Academia"]],
+["Jacques Derrida","M",1930,"Algeria","",false,"1970s",["Academia","Writing"]],
+["Isaiah Berlin","M",1909,"Latvia","",false,"1960s",["Academia","Writing"]],
+["Leo Strauss","M",1899,"Germany","",false,"1950s",["Academia"]],
+["Theodor Adorno","M",1903,"Germany","",false,"1960s",["Academia","Writing"]],
+["Herbert Marcuse","M",1898,"Germany","",false,"1960s",["Academia","Writing"]],
+["Émile Durkheim","M",1858,"France","",false,"pre-1940",["Academia"]],
+["Marcel Proust","M",1871,"France","",false,"pre-1940",["Writing"]],
+["Heinrich Heine","M",1797,"Germany","",false,"pre-1940",["Writing"]],
+["Alfred Dreyfus","M",1859,"France","",false,"pre-1940",["Politics"]],
+["Benjamin Disraeli","M",1804,"United Kingdom","",false,"pre-1940",["Politics","Writing"]],
+["Amedeo Modigliani","M",1884,"Italy","",false,"pre-1940",["Art"]],
+["Mark Rothko","M",1903,"Latvia","",false,"1950s",["Art"]],
+["Roy Lichtenstein","M",1923,"United States","New York",false,"1960s",["Art"]],
+["Barnett Newman","M",1905,"United States","New York",false,"1950s",["Art"]],
+["Man Ray","M",1890,"United States","Pennsylvania",false,"pre-1940",["Art"]],
+["Annie Leibovitz","F",1949,"United States","Connecticut",true,"1980s",["Art"]],
+["Diane Arbus","F",1923,"United States","New York",false,"1960s",["Art"]],
+["Richard Avedon","M",1923,"United States","New York",false,"1950s",["Art"]],
+["Frank Gehry","M",1929,"Canada","",true,"1990s",["Art"]],
+["Louise Nevelson","F",1899,"Ukraine","",false,"1960s",["Art"]],
+["Helen Frankenthaler","F",1928,"United States","New York",false,"1960s",["Art"]],
+["Sid Luckman","M",1916,"United States","New York",false,"pre-1940",["Sports"]],
+["Red Auerbach","M",1917,"United States","New York",false,"1960s",["Sports"]],
+["Dolph Schayes","M",1928,"United States","New York",false,"1950s",["Sports"]],
+["Ryan Braun","M",1983,"United States","California",true,"2000s",["Sports"]],
+["Ian Kinsler","M",1982,"United States","California",true,"2000s",["Sports"]],
+["Kevin Youkilis","M",1979,"United States","Ohio",true,"2000s",["Sports"]],
+["Shawn Green","M",1972,"United States","Illinois",true,"1990s",["Sports"]],
+["Julian Edelman","M",1986,"United States","California",true,"2010s",["Sports"]],
+["Sue Bird","F",1980,"United States","New York",true,"2000s",["Sports"]],
+["Dara Torres","F",1967,"United States","California",true,"1990s",["Sports"]],
+["Nancy Lieberman","F",1958,"United States","New York",true,"1980s",["Sports"]],
+["Bud Selig","M",1934,"United States","Wisconsin",true,"1990s",["Sports","Business"]],
+["David Stern","M",1942,"United States","New York",false,"1990s",["Sports","Business"]],
+["Adam Silver","M",1962,"United States","New York",true,"2010s",["Sports","Business"]],
+["Robert Kraft","M",1941,"United States","Massachusetts",true,"2000s",["Sports","Business"]],
+["Mark Cuban","M",1958,"United States","Pennsylvania",true,"2000s",["Business","Sports","Television"]],
+["Meyer Lansky","M",1902,"Belarus","",false,"pre-1940",["Business"]],
+["Arnold Rothstein","M",1882,"United States","New York",false,"pre-1940",["Business"]],
+["Emma Lazarus","F",1849,"United States","New York",false,"pre-1940",["Writing"]],
+["Haym Salomon","M",1740,"Poland","",false,"pre-1940",["Business","Politics"]],
+["Uri Geller","M",1946,"Israel","",true,"1970s",["Stage"]],
+["Monica Lewinsky","F",1973,"United States","California",true,"1990s",["Activism","Writing"]],
+["Ben Shapiro","M",1984,"United States","California",true,"2010s",["Journalism","Politics"]],
+
+/* --- batch two --- */
+["Wallace Shawn","M",1943,"United States","New York",true,"1980s",["Acting","Writing","Stage"]],
+["Mandy Patinkin","M",1952,"United States","Illinois",true,"1980s",["Acting","Music","Stage"]],
+["Eugene Levy","M",1946,"Canada","",true,"1980s",["Comedy","Acting"]],
+["Gilbert Gottfried","M",1955,"United States","New York",false,"1990s",["Comedy"]],
+["David Cross","M",1964,"United States","Georgia",true,"2000s",["Comedy","Acting"]],
+["Jeff Garlin","M",1962,"United States","Illinois",true,"2000s",["Comedy","Acting"]],
+["Susie Essman","F",1955,"United States","New York",true,"2000s",["Comedy","Acting"]],
+["Larry Charles","M",1956,"United States","New York",true,"2000s",["Film","Television","Writing"]],
+["Josh Gad","M",1981,"United States","Florida",true,"2010s",["Acting","Comedy"]],
+["Jason Segel","M",1980,"United States","California",true,"2000s",["Acting","Comedy"]],
+["Jason Schwartzman","M",1980,"United States","California",true,"2000s",["Acting","Music"]],
+["Emmy Rossum","F",1986,"United States","New York",true,"2000s",["Acting"]],
+["Natasha Lyonne","F",1979,"United States","New York",true,"2010s",["Acting","Comedy"]],
+["Sarah Michelle Gellar","F",1977,"United States","New York",true,"1990s",["Acting","Television"]],
+["Ben Savage","M",1980,"United States","Illinois",true,"1990s",["Acting","Television"]],
+["Fred Savage","M",1976,"United States","Illinois",true,"1980s",["Acting","Television"]],
+["Adam Brody","M",1979,"United States","California",true,"2000s",["Acting"]],
+["Alex Borstein","F",1971,"United States","Illinois",true,"2000s",["Comedy","Acting"]],
+["Nick Kroll","M",1978,"United States","New York",true,"2010s",["Comedy","Acting"]],
+["Chelsea Handler","F",1975,"United States","New Jersey",true,"2000s",["Comedy","Television"]],
+["Michael Showalter","M",1970,"United States","New Jersey",true,"2000s",["Comedy","Film"]],
+["Rachel Sennott","F",1995,"United States","Connecticut",true,"2020s",["Acting","Comedy"]],
+["Alan King","M",1927,"United States","New York",false,"1960s",["Comedy","Stage"]],
+["Buddy Hackett","M",1924,"United States","New York",false,"1960s",["Comedy","Acting"]],
+["Phil Silvers","M",1911,"United States","New York",false,"1950s",["Comedy","Television"]],
+["Elaine May","F",1932,"United States","Pennsylvania",true,"1960s",["Comedy","Film","Writing"]],
+["Robert Klein","M",1942,"United States","New York",true,"1970s",["Comedy","Stage"]],
+["David Steinberg","M",1942,"Canada","",true,"1970s",["Comedy","Television"]],
+["Mort Sahl","M",1927,"Canada","",false,"1950s",["Comedy","Stage"]],
+["Jackie Mason","M",1928,"United States","Wisconsin",false,"1980s",["Comedy","Stage"]],
+["Judd Hirsch","M",1935,"United States","New York",true,"1970s",["Acting","Television"]],
+["Ed Asner","M",1929,"United States","Missouri",false,"1970s",["Acting","Television"]],
+["Michael Landon","M",1936,"United States","New York",false,"1970s",["Acting","Television"]],
+["Lorne Michaels","M",1944,"Canada","",true,"1970s",["Television","Comedy"]],
+["Eddie Cantor","M",1892,"United States","New York",false,"pre-1940",["Comedy","Music","Stage"]],
+["Fanny Brice","F",1891,"United States","New York",false,"pre-1940",["Comedy","Stage"]],
+["Sophie Tucker","F",1886,"Ukraine","",false,"pre-1940",["Music","Stage"]],
+["Molly Picon","F",1898,"United States","New York",false,"pre-1940",["Acting","Stage"]],
+["Al Jolson","M",1886,"Lithuania","",false,"pre-1940",["Music","Acting","Stage"]],
+["Theodore Bikel","M",1924,"Austria","",false,"1960s",["Acting","Music","Stage"]],
+["Herb Alpert","M",1935,"United States","California",true,"1960s",["Music","Business"]],
+["Neil Sedaka","M",1939,"United States","New York",true,"1960s",["Music"]],
+["Carole Bayer Sager","F",1944,"United States","New York",true,"1970s",["Music"]],
+["Jerry Leiber","M",1933,"United States","Maryland",false,"1950s",["Music"]],
+["Mike Stoller","M",1933,"United States","New York",true,"1950s",["Music"]],
+["Phil Spector","M",1939,"United States","New York",false,"1960s",["Music"]],
+["Doc Pomus","M",1925,"United States","New York",false,"1950s",["Music"]],
+["Clive Davis","M",1932,"United States","New York",true,"1970s",["Business","Music"]],
+["Cass Elliot","F",1941,"United States","Maryland",false,"1960s",["Music"]],
+["Kinky Friedman","M",1944,"United States","Illinois",false,"1970s",["Music","Writing"]],
+["Adam Duritz","M",1964,"United States","Maryland",true,"1990s",["Music"]],
+["David Lee Roth","M",1954,"United States","Indiana",true,"1980s",["Music"]],
+["Joey Ramone","M",1951,"United States","New York",false,"1970s",["Music"]],
+["Tommy Ramone","M",1949,"Hungary","",false,"1970s",["Music"]],
+["Lisa Loeb","F",1968,"United States","Maryland",true,"1990s",["Music"]],
+["Matisyahu","M",1979,"United States","Pennsylvania",true,"2000s",["Music"]],
+["Ezra Koenig","M",1984,"United States","New York",true,"2000s",["Music"]],
+["Jack Antonoff","M",1984,"United States","New Jersey",true,"2010s",["Music"]],
+["Este Haim","F",1986,"United States","California",true,"2010s",["Music"]],
+["Danielle Haim","F",1989,"United States","California",true,"2010s",["Music"]],
+["Alana Haim","F",1991,"United States","California",true,"2010s",["Music","Acting"]],
+["Mark Ronson","M",1975,"United Kingdom","",true,"2000s",["Music"]],
+["Diane Warren","F",1956,"United States","California",true,"1990s",["Music"]],
+["Ofra Haza","F",1957,"Israel","",false,"1980s",["Music"]],
+["Idan Raichel","M",1977,"Israel","",true,"2000s",["Music"]],
+["Shlomo Carlebach","M",1925,"Germany","",false,"1970s",["Music"]],
+["Benny Leonard","M",1896,"United States","New York",false,"pre-1940",["Sports"]],
+["Barney Ross","M",1909,"United States","New York",false,"pre-1940",["Sports"]],
+["Nat Holman","M",1896,"United States","New York",false,"pre-1940",["Sports"]],
+["Marv Levy","M",1925,"United States","Illinois",false,"1990s",["Sports"]],
+["Al Rosen","M",1924,"United States","South Carolina",false,"1950s",["Sports"]],
+["Omri Casspi","M",1988,"Israel","",true,"2010s",["Sports"]],
+["Deni Avdija","M",2001,"Israel","",true,"2020s",["Sports"]],
+["Sasha Cohen","F",1984,"United States","California",true,"2000s",["Sports"]],
+["Jason Lezak","M",1975,"United States","California",true,"2000s",["Sports"]],
+["Lenny Krayzelburg","M",1975,"Ukraine","",true,"2000s",["Sports"]],
+["Ágnes Keleti","F",1921,"Hungary","",false,"1950s",["Sports"]],
+["Wolfgang Pauli","M",1900,"Austria","",false,"pre-1940",["Science","Academia"]],
+["Otto Frisch","M",1904,"Austria","",false,"1940s",["Science"]],
+["Hans Bethe","M",1906,"Germany","",false,"1940s",["Science","Academia"]],
+["Murray Gell-Mann","M",1929,"United States","New York",false,"1960s",["Science","Academia"]],
+["Sheldon Glashow","M",1932,"United States","New York",true,"1970s",["Science","Academia"]],
+["Steven Weinberg","M",1933,"United States","New York",false,"1970s",["Science","Academia"]],
+["Carl Djerassi","M",1923,"Austria","",false,"1960s",["Science","Writing"]],
+["Gregory Pincus","M",1903,"United States","New Jersey",false,"1960s",["Science"]],
+["Stanley Milgram","M",1933,"United States","New York",false,"1960s",["Science","Academia"]],
+["Solomon Asch","M",1907,"Poland","",false,"1950s",["Science","Academia"]],
+["Abraham Maslow","M",1908,"United States","New York",false,"1960s",["Science","Academia"]],
+["Erik Erikson","M",1902,"Germany","",false,"1960s",["Science","Academia"]],
+["Bruno Bettelheim","M",1903,"Austria","",false,"1960s",["Science","Academia"]],
+["Anna Freud","F",1895,"Austria","",false,"1950s",["Science","Academia"]],
+["Melanie Klein","F",1882,"Austria","",false,"pre-1940",["Science","Academia"]],
+["Viktor Frankl","M",1905,"Austria","",false,"1950s",["Science","Writing"]],
+["Robert Aumann","M",1930,"Germany","",true,"2000s",["Academia","Science"]],
+["Paul Samuelson","M",1915,"United States","Indiana",false,"1970s",["Academia"]],
+["Kenneth Arrow","M",1921,"United States","New York",false,"1970s",["Academia"]],
+["Robert Solow","M",1924,"United States","New York",false,"1980s",["Academia"]],
+["Larry Summers","M",1954,"United States","Connecticut",true,"1990s",["Academia","Politics"]],
+["Jeffrey Sachs","M",1954,"United States","Michigan",true,"1990s",["Academia"]],
+["Judith Butler","F",1956,"United States","Ohio",true,"1990s",["Academia","Writing"]],
+["Peter Singer","M",1946,"Australia","",true,"1990s",["Academia","Writing"]],
+["Sam Harris","M",1967,"United States","California",true,"2000s",["Writing","Academia"]],
+["Yuval Noah Harari","M",1976,"Israel","",true,"2010s",["Writing","Academia"]],
+["Abraham Joshua Heschel","M",1907,"Poland","",false,"1960s",["Academia","Activism","Writing"]],
+["Joseph Soloveitchik","M",1903,"Belarus","",false,"1960s",["Academia"]],
+["Menachem Mendel Schneerson","M",1902,"Ukraine","",false,"1970s",["Academia","Activism"]],
+["Meir Kahane","M",1932,"United States","New York",false,"1970s",["Politics","Activism"]],
+["Levi Eshkol","M",1895,"Ukraine","",false,"1960s",["Politics"]],
+["Yitzhak Shamir","M",1915,"Belarus","",false,"1980s",["Politics"]],
+["Ehud Olmert","M",1945,"Israel","",true,"2000s",["Politics"]],
+["Tzipi Livni","F",1958,"Israel","",true,"2000s",["Politics"]],
+["Avigdor Lieberman","M",1958,"Moldova","",true,"2000s",["Politics"]],
+["Isaac Herzog","M",1960,"Israel","",true,"2020s",["Politics"]],
+["Abba Eban","M",1915,"South Africa","",false,"1960s",["Politics","Writing"]],
+["Yehuda Amichai","M",1924,"Germany","",false,"1960s",["Writing"]],
+["S.Y. Agnon","M",1887,"Ukraine","",false,"1960s",["Writing"]],
+["Etgar Keret","M",1967,"Israel","",true,"1990s",["Writing"]],
+["Ephraim Kishon","M",1924,"Hungary","",false,"1960s",["Writing","Film"]],
+["Shira Haas","F",1995,"Israel","",true,"2010s",["Acting"]],
+["Lior Raz","M",1971,"Israel","",true,"2010s",["Acting","Writing"]],
+["Bar Refaeli","F",1985,"Israel","",true,"2000s",["Business","Acting"]],
+["Thomas Friedman","M",1953,"United States","Minnesota",true,"1990s",["Journalism","Writing"]],
+["David Brooks","M",1961,"Canada","",true,"2000s",["Journalism","Writing"]],
+["Ezra Klein","M",1984,"United States","California",true,"2010s",["Journalism"]],
+["Matt Drudge","M",1966,"United States","Maryland",true,"1990s",["Journalism"]],
+["Nate Silver","M",1978,"United States","Michigan",true,"2010s",["Journalism","Academia"]],
+["Jake Tapper","M",1969,"United States","New York",true,"2010s",["Journalism","Television"]],
+["Jeffrey Goldberg","M",1965,"United States","New York",true,"2000s",["Journalism"]],
+["Seymour Hersh","M",1937,"United States","Illinois",true,"1970s",["Journalism","Writing"]],
+["I.F. Stone","M",1907,"United States","Pennsylvania",false,"1960s",["Journalism","Writing"]],
+["Daniel Pearl","M",1963,"United States","New Jersey",false,"2000s",["Journalism"]],
+["A.M. Rosenthal","M",1922,"Canada","",false,"1970s",["Journalism"]],
+["Arthur Ochs Sulzberger","M",1926,"United States","New York",false,"1970s",["Business","Journalism"]],
+["Joseph Pulitzer","M",1847,"Hungary","",false,"pre-1940",["Journalism","Business"]],
+["Bari Weiss","F",1984,"United States","Pennsylvania",true,"2010s",["Journalism","Writing"]],
+["Daniel Libeskind","M",1946,"Poland","",true,"2000s",["Art"]],
+["Moshe Safdie","M",1938,"Israel","",true,"1970s",["Art"]],
+["Richard Meier","M",1934,"United States","New Jersey",true,"1990s",["Art"]],
+["Sol LeWitt","M",1928,"United States","Connecticut",false,"1970s",["Art"]],
+["Eva Hesse","F",1936,"Germany","",false,"1960s",["Art"]],
+["Lee Krasner","F",1908,"United States","New York",false,"1950s",["Art"]],
+["Ben Shahn","M",1898,"Lithuania","",false,"pre-1940",["Art"]],
+["Alfred Stieglitz","M",1864,"United States","New Jersey",false,"pre-1940",["Art"]],
+["Weegee","M",1899,"Ukraine","",false,"1940s",["Art","Journalism"]],
+["Robert Capa","M",1913,"Hungary","",false,"1940s",["Art","Journalism"]],
+["Helmut Newton","M",1920,"Germany","",false,"1970s",["Art"]],
+["Garry Winogrand","M",1928,"United States","New York",false,"1970s",["Art"]],
+["Calvin Klein","M",1942,"United States","New York",true,"1970s",["Business","Art"]],
+["Donna Karan","F",1948,"United States","New York",true,"1980s",["Business","Art"]],
+["Isaac Mizrahi","M",1961,"United States","New York",true,"1990s",["Business","Art"]],
+["Marc Jacobs","M",1963,"United States","New York",true,"1990s",["Business","Art"]],
+["Diane von Furstenberg","F",1946,"Belgium","",true,"1970s",["Business","Art"]],
+["Leonard Lauder","M",1933,"United States","New York",true,"1980s",["Business"]],
+["Ronald Lauder","M",1944,"United States","New York",true,"1990s",["Business","Politics"]],
+["Steve Wynn","M",1942,"United States","Connecticut",true,"1990s",["Business"]],
+["Eli Broad","M",1933,"United States","New York",false,"1990s",["Business"]],
+["Sanford Weill","M",1933,"United States","New York",true,"1990s",["Business"]],
+["Robert Rubin","M",1938,"United States","New York",true,"1990s",["Politics","Business"]],
+["Larry Fink","M",1952,"United States","California",true,"2000s",["Business"]],
+["Stephen Schwarzman","M",1947,"United States","Pennsylvania",true,"2000s",["Business"]],
+["Leon Black","M",1951,"United States","New York",true,"2000s",["Business"]],
+["David Rubenstein","M",1949,"United States","Maryland",true,"2000s",["Business"]],
+["Ray Kurzweil","M",1948,"United States","New York",true,"1990s",["Tech","Science","Writing"]],
+["Paul Baran","M",1926,"Poland","",false,"1990s",["Tech"]],
+["Leonard Kleinrock","M",1934,"United States","New York",true,"1990s",["Tech","Academia"]],
+["Judea Pearl","M",1936,"Israel","",true,"2000s",["Tech","Academia"]],
+["Ilya Sutskever","M",1986,"Russia / USSR","",true,"2010s",["Tech","Science"]],
+["Sam Altman","M",1985,"United States","Illinois",true,"2010s",["Tech","Business"]],
+["Sam Bankman-Fried","M",1992,"United States","California",true,"2020s",["Business","Tech"]],
+["Adam Neumann","M",1979,"Israel","",true,"2010s",["Business"]],
+["David Sacks","M",1972,"South Africa","",true,"2010s",["Tech","Business"]],
+["Aaron Swartz","M",1986,"United States","Illinois",false,"2010s",["Tech","Activism"]],
+["James L. Brooks","M",1940,"United States","New York",true,"1980s",["Television","Film"]],
+["Garry Marshall","M",1934,"United States","New York",false,"1970s",["Television","Film"]],
+["Penny Marshall","F",1943,"United States","New York",false,"1970s",["Acting","Film","Television"]],
+["Sherry Lansing","F",1944,"United States","Illinois",true,"1990s",["Business","Film"]],
+["Amy Pascal","F",1958,"United States","California",true,"2000s",["Business","Film"]],
+["Brian Grazer","M",1951,"United States","California",true,"1990s",["Film","Business"]],
+["Jerry Bruckheimer","M",1943,"United States","Michigan",true,"1990s",["Film","Business"]],
+["Joel Silver","M",1952,"United States","New Jersey",true,"1990s",["Film","Business"]],
+["Robert Evans","M",1930,"United States","New York",false,"1970s",["Film","Business"]],
+["William Friedkin","M",1935,"United States","Illinois",false,"1970s",["Film"]],
+["Paul Mazursky","M",1930,"United States","New York",false,"1970s",["Film","Writing"]],
+["John Landis","M",1950,"United States","Illinois",true,"1980s",["Film"]],
+["Barry Levinson","M",1942,"United States","Maryland",true,"1980s",["Film","Writing"]],
+["Nancy Meyers","F",1949,"United States","Pennsylvania",true,"1990s",["Film","Writing"]],
+["Noah Baumbach","M",1969,"United States","New York",true,"2000s",["Film","Writing"]],
+["Benny Safdie","M",1986,"United States","New York",true,"2010s",["Film","Acting"]],
+["Josh Safdie","M",1984,"United States","New York",true,"2010s",["Film"]],
+["Ari Aster","M",1986,"United States","New York",true,"2010s",["Film","Writing"]],
+["Lena Dunham","F",1986,"United States","New York",true,"2010s",["Television","Film","Writing"]],
+["Jill Soloway","F",1965,"United States","Illinois",true,"2010s",["Television","Writing"]],
+["Matt Weiner","M",1965,"United States","Maryland",true,"2000s",["Television","Writing"]],
+["Larry Gelbart","M",1928,"United States","Illinois",false,"1970s",["Television","Writing"]],
+["Sherwood Schwartz","M",1916,"United States","New York",false,"1960s",["Television","Writing"]],
+["Aaron Spelling","M",1923,"United States","Texas",false,"1970s",["Television","Business"]],
+
+/* --- batch three: contemporary --- */
+["Timothée Chalamet","M",1995,"United States","New York",true,"2010s",["Acting"]],
+["Alison Brie","F",1982,"United States","California",true,"2010s",["Acting","Comedy"]],
+["Jenny Slate","F",1982,"United States","Massachusetts",true,"2010s",["Comedy","Acting"]],
+["Gaby Hoffmann","F",1982,"United States","New York",true,"2010s",["Acting"]],
+["Amanda Peet","F",1972,"United States","New York",true,"2000s",["Acting"]],
+["Lea Michele","F",1986,"United States","New York",true,"2010s",["Acting","Music","Stage"]],
+["Idina Menzel","F",1971,"United States","New York",true,"2000s",["Music","Acting","Stage"]],
+["Josh Peck","M",1986,"United States","New York",true,"2000s",["Acting","Comedy"]],
+["Emily Ratajkowski","F",1991,"United Kingdom","",true,"2010s",["Acting","Business","Writing"]],
+["Seth Meyers","M",1973,"United States","Illinois",true,"2010s",["Comedy","Television"]],
+["Vanessa Bayer","F",1981,"United States","Ohio",true,"2010s",["Comedy","Acting"]],
+["Cazzie David","F",1994,"United States","California",true,"2010s",["Writing","Comedy"]],
+["Noah Kahan","M",1997,"United States","Vermont",true,"2020s",["Music"]],
+["David Draiman","M",1973,"United States","New York",true,"2000s",["Music"]],
+["Scott Ian","M",1963,"United States","New York",true,"1980s",["Music"]],
+["Perry Farrell","M",1959,"United States","New York",true,"1990s",["Music"]],
+["Mike Gordon","M",1965,"United States","New Jersey",true,"1990s",["Music"]],
+["Jon Fishman","M",1965,"United States","Pennsylvania",true,"1990s",["Music"]],
+["Brian Epstein","M",1934,"United Kingdom","",false,"1960s",["Business","Music"]],
+["Malcolm McLaren","M",1946,"United Kingdom","",false,"1970s",["Business","Music"]],
+["Mick Jones","M",1955,"United Kingdom","",true,"1970s",["Music"]],
+["Laura Nyro","F",1947,"United States","New York",false,"1960s",["Music"]],
+["Janis Ian","F",1951,"United States","New York",true,"1960s",["Music"]],
+["Peter Yarrow","M",1938,"United States","New York",false,"1960s",["Music"]],
+["Arlo Guthrie","M",1947,"United States","New York",true,"1960s",["Music"]],
+["Al Kooper","M",1944,"United States","New York",true,"1960s",["Music"]],
+["Robbie Robertson","M",1943,"Canada","",false,"1960s",["Music"]],
+["Nicole Krauss","F",1974,"United States","New York",true,"2000s",["Writing"]],
+["Gary Shteyngart","M",1972,"Russia / USSR","",true,"2000s",["Writing"]],
+["Nathan Englander","M",1970,"United States","New York",true,"2000s",["Writing"]],
+["Joshua Cohen","M",1980,"United States","New Jersey",true,"2020s",["Writing"]],
+["Andrew Ross Sorkin","M",1977,"United States","New York",true,"2010s",["Journalism","Writing"]],
+["Dave Portnoy","M",1977,"United States","Massachusetts",true,"2010s",["Business","Journalism"]],
+["Scott Galloway","M",1964,"United States","New York",true,"2010s",["Academia","Business"]],
+["Alex Karp","M",1967,"United States","New York",true,"2010s",["Tech","Business"]],
+["Michael Rubin","M",1972,"United States","Pennsylvania",true,"2010s",["Business"]],
+["Jeremy Stoppelman","M",1977,"United States","Virginia",true,"2000s",["Tech","Business"]],
+["Neil Blumenthal","M",1980,"United States","New York",true,"2010s",["Business"]],
+["Merrick Garland","M",1952,"United States","Illinois",true,"2020s",["Law","Politics"]],
+["Antony Blinken","M",1962,"United States","New York",true,"2020s",["Politics"]],
+["Jamie Raskin","M",1962,"United States","Washington DC",true,"2020s",["Politics","Law"]],
+["Adam Schiff","M",1960,"United States","Massachusetts",true,"2010s",["Politics","Law"]],
+["Jerry Nadler","M",1947,"United States","New York",true,"2010s",["Politics"]],
+["Debbie Wasserman Schultz","F",1966,"United States","New York",true,"2010s",["Politics"]],
+["Ben Cardin","M",1943,"United States","Maryland",true,"2010s",["Politics"]],
+["Brian Schatz","M",1972,"United States","Michigan",true,"2010s",["Politics"]],
+["Jared Polis","M",1975,"United States","California",true,"2010s",["Politics","Tech"]],
+["Josh Shapiro","M",1973,"United States","Pennsylvania",true,"2020s",["Politics","Law"]],
+["Jordan Farmar","M",1986,"United States","California",true,"2000s",["Sports"]],
+["Volodymyr Zelensky","M",1978,"Ukraine","",true,"2010s",["Politics","Comedy","Acting"]],
+["Bill Maher","M",1956,"United States","New York",true,"1990s",["Comedy","Television","Journalism"]],
+];
+
+const ROSTER = [
+  ...CORE.map((r, i) => ({
+    id: i, answerable: true,
+    name: r[0], gender: r[1], year: r[2], country: r[3], state: r[4],
+    living: r[5], era: r[6], fields: r[7], blurb: r[8], hints: r[9],
+  })),
+  ...EXTRA.map((r, i) => ({
+    id: 1000 + i, answerable: false,
+    name: r[0], gender: r[1], year: r[2], country: r[3], state: r[4],
+    living: r[5], era: r[6], fields: r[7], blurb: "", hints: [],
+  })),
+];
+
+const ANSWERS = ROSTER.filter((p) => p.answerable);
+
+/* ---------------- comparison ---------------- */
+
+const HIT = "hit", NEAR = "near", MISS = "miss";
+
+function compare(g, t) {
+  const shared = g.fields.filter((f) => t.fields.includes(f));
+  const yd = t.year - g.year;
+  const gi = ERAS.indexOf(g.era), ti = ERAS.indexOf(t.era);
+  const ed = ti - gi;
+
+  let place = { state: MISS, sub: null };
+  if (g.country === t.country) {
+    if (g.country === "United States") {
+      place = g.state === t.state ? { state: HIT, sub: HIT } : { state: NEAR, sub: MISS };
+    } else place = { state: HIT, sub: null };
+  }
+
+  return {
+    guess: g,
+    // any shared field counts as a match
+    fields: { state: shared.length > 0 ? HIT : MISS, shared },
+    gender: { state: g.gender === t.gender ? HIT : MISS },
+    year: {
+      state: yd === 0 ? HIT : Math.abs(yd) <= 5 ? NEAR : MISS,
+      arrow: yd === 0 ? "" : yd < 0 ? "↓" : "↑",
+    },
+    place,
+    living: { state: g.living === t.living ? HIT : MISS },
+    era: {
+      state: ed === 0 ? HIT : Math.abs(ed) === 1 ? NEAR : MISS,
+      arrow: ed === 0 ? "" : ed > 0 ? "↑" : "↓",
+    },
+  };
+}
+
+const tileBg = (s) => (s === HIT ? COLORS.hit : s === NEAR ? COLORS.near : COLORS.miss);
+
+/* ---------------- dreidel ---------------- */
+
+function Dreidel({ spinKey }) {
+  return (
+    <svg
+      viewBox="0 0 60 76"
+      width="36"
+      height="46"
+      aria-hidden="true"
+      key={spinKey}
+      style={{
+        transformOrigin: "50% 45%",
+        animation: spinKey > 0 ? "dspin 1000ms cubic-bezier(.2,.7,.2,1) 1" : "none",
+      }}
+    >
+      <rect x="26" y="0" width="8" height="12" rx="2" fill={COLORS.brass} />
+      <path d="M10 12 h40 v34 l-20 22 -20 -22 z" fill={COLORS.tekhelet}
+        stroke={COLORS.brass} strokeWidth="2" strokeLinejoin="round" />
+      <text x="30" y="38" textAnchor="middle" fill={COLORS.parchment}
+        style={{ font: `600 22px ${DISPLAY}` }}>נ</text>
+    </svg>
+  );
+}
+
+const HEB = ["נ", "ג", "ה", "ש"];
+
+/* ---------------- main ---------------- */
+
+export default function Dradel() {
+  const [target, setTarget] = useState(() => ANSWERS[Math.floor(Math.random() * ANSWERS.length)]);
+  const [guesses, setGuesses] = useState([]);
+  const [input, setInput] = useState("");
+  const [hints, setHints] = useState(1); // first hint is free
+  const [status, setStatus] = useState("playing");
+  const [confirmGiveUp, setConfirmGiveUp] = useState(false);
+  const [spinKey, setSpinKey] = useState(0);
+  const [flash, setFlash] = useState("");
+  const [highlight, setHighlight] = useState(0);
+  const [unseen, setUnseen] = useState(() => ANSWERS.map((p) => p.id));
+  const inputRef = useRef(null);
+
+  const guessedIds = guesses.map((g) => g.guess.id);
+
+  const matches = useMemo(() => {
+    const q = input.trim().toLowerCase();
+    if (!q) return [];
+    const starts = [], contains = [];
+    for (const p of ROSTER) {
+      if (guessedIds.includes(p.id)) continue;
+      const n = p.name.toLowerCase();
+      if (n.startsWith(q)) starts.push(p);
+      else if (n.includes(q)) contains.push(p);
+    }
+    return [...starts, ...contains].slice(0, 7);
+  }, [input, guesses]);
+
+  useEffect(() => setHighlight(0), [input]);
+
+  function spin() {
+    setSpinKey((k) => k + 1);
+  }
+
+  function newGame() {
+    let pool = unseen.filter((id) => id !== target.id);
+    if (pool.length === 0) pool = ANSWERS.map((p) => p.id);
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    setUnseen(pool.filter((id) => id !== pick));
+    setTarget(ROSTER.find((p) => p.id === pick));
+    setGuesses([]); setInput(""); setHints(1);
+    setStatus("playing"); setConfirmGiveUp(false); setFlash("");
+    spin();
+    setTimeout(() => inputRef.current && inputRef.current.focus(), 60);
+  }
+
+  function submit(person) {
+    if (status !== "playing") return;
+    const p = person || matches[highlight];
+    if (!p) { setFlash("No one by that name in the pool. Try a few letters."); return; }
+    if (guessedIds.includes(p.id)) { setFlash(`Already guessed ${p.name}.`); return; }
+    setFlash(""); setInput("");
+    spin();
+    setGuesses((prev) => [compare(p, target), ...prev]);
+    if (p.id === target.id) setStatus("won");
+  }
+
+  const hintText = [
+    ...target.hints,
+    `Initials: ${target.name.split(" ").map((w) => w[0]).join(".")}.`,
+  ];
+
+  const solved = status === "won";
+  const revealed = status !== "playing";
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: `radial-gradient(120% 80% at 50% -10%, ${COLORS.panel} 0%, ${COLORS.ink} 60%)`,
+      color: COLORS.parchment, fontFamily: BODY, padding: "28px 16px 64px",
+    }}>
+      <style>{`
+        @keyframes dspin { from { transform: rotate(0deg) scale(1) } 60% { transform: rotate(760deg) scale(1.08) } to { transform: rotate(1080deg) scale(1) } }
+        @keyframes drop { from { opacity:0; transform: translateY(-10px) } to { opacity:1; transform:none } }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+        .drow { animation: drop 240ms ease-out both; }
+        .dgrid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; }
+        @media (min-width: 640px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
+        input:focus-visible, button:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
+      `}</style>
+
+      <div style={{ maxWidth: 880, margin: "0 auto" }}>
+        <header style={{ textAlign: "center", marginBottom: 26 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+            <Dreidel spinKey={spinKey} />
+          </div>
+          <h1 style={{
+            fontFamily: DISPLAY, fontSize: "clamp(38px, 9vw, 62px)",
+            letterSpacing: "0.16em", margin: 0, fontWeight: 700, textIndent: "0.16em",
+          }}>
+            DR<span style={{ color: COLORS.brass }}>Δ</span>DEL
+          </h1>
+          <p style={{
+            fontFamily: MONO, fontSize: 12, letterSpacing: "0.22em",
+            textTransform: "uppercase", color: COLORS.brass, margin: "8px 0 0",
+          }}>Guess the famous Jew</p>
+          <p style={{ color: COLORS.parchDim, fontSize: 13, margin: "10px 0 0", lineHeight: 1.5 }}>
+            Every wrong guess tells you how the two people compare. Narrow it down.
+          </p>
+        </header>
+
+        {!revealed && (
+          <div style={{ marginBottom: 18 }}>
+            {hintText.slice(0, hints).map((h, i) => (
+              <div key={i} style={{
+                display: "flex", gap: 12, alignItems: "baseline",
+                borderLeft: `2px solid ${COLORS.brass}`, padding: "8px 14px",
+                marginBottom: 6, background: COLORS.ink2,
+              }}>
+                <span style={{ fontFamily: DISPLAY, fontSize: 20, color: COLORS.brass, width: 18 }}>{HEB[i]}</span>
+                <span style={{ fontSize: 15 }}>{h}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!revealed && (
+          <div style={{ position: "relative", marginBottom: 14 }}>
+            <input
+              ref={inputRef} value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); submit(); }
+                else if (e.key === "ArrowDown") { e.preventDefault(); setHighlight((h) => Math.min(h + 1, matches.length - 1)); }
+                else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
+                else if (e.key === "Escape") setInput("");
+              }}
+              placeholder="Type a name…"
+              aria-label="Guess a famous Jewish person"
+              autoComplete="off"
+              style={{
+                width: "100%", boxSizing: "border-box", background: COLORS.ink2,
+                border: `1px solid ${COLORS.edge}`, borderRadius: 4, color: COLORS.parchment,
+                fontFamily: DISPLAY, fontSize: 20, padding: "14px 16px",
+              }}
+            />
+            {matches.length > 0 && (
+              <ul style={{
+                listStyle: "none", margin: 0, padding: 0, position: "absolute", zIndex: 20,
+                left: 0, right: 0, background: COLORS.ink2, border: `1px solid ${COLORS.edge}`,
+                borderTop: "none", borderRadius: "0 0 4px 4px", overflow: "hidden",
+              }}>
+                {matches.map((p, i) => (
+                  <li key={p.id}
+                    onMouseDown={(e) => { e.preventDefault(); submit(p); }}
+                    onMouseEnter={() => setHighlight(i)}
+                    style={{
+                      padding: "11px 16px", cursor: "pointer", fontFamily: DISPLAY, fontSize: 17,
+                      background: i === highlight ? COLORS.tekhelet : "transparent",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                    }}>
+                    <span>{p.name}</span>
+                    {!p.answerable && (
+                      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
+                        PROBE
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {flash && (
+          <p style={{ fontFamily: MONO, fontSize: 12, color: COLORS.brass, margin: "0 0 12px" }}>{flash}</p>
+        )}
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 22 }}>
+          <Btn onClick={newGame}>New game</Btn>
+          {!revealed && (
+            <>
+              <Btn onClick={() => hints < 4 && setHints(hints + 1)} disabled={hints >= 4}>
+                {hints >= 4 ? "No hints left" : "Another hint"}
+              </Btn>
+              {!confirmGiveUp ? (
+                <Btn ghost onClick={() => setConfirmGiveUp(true)}>I give up</Btn>
+              ) : (
+                <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13, color: COLORS.parchDim }}>Reveal the mystery Jew?</span>
+                  <Btn ghost onClick={() => { setStatus("gave-up"); setConfirmGiveUp(false); }}>Yes, reveal</Btn>
+                  <Btn ghost onClick={() => setConfirmGiveUp(false)}>Keep going</Btn>
+                </span>
+              )}
+            </>
+          )}
+          <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 12, color: COLORS.parchDim }}>
+            {guesses.length} {guesses.length === 1 ? "guess" : "guesses"}
+            {hints > 1 && ` · ${hints - 1} ${hints - 1 === 1 ? "hint" : "hints"}`}
+          </span>
+        </div>
+
+        {revealed && (
+          <div style={{
+            border: `1px solid ${COLORS.brass}`, background: COLORS.ink2,
+            padding: "26px 22px", marginBottom: 26, textAlign: "center",
+          }}>
+            <p style={{
+              fontFamily: MONO, letterSpacing: "0.24em", textTransform: "uppercase",
+              fontSize: 12, color: COLORS.brass, margin: 0,
+            }}>{solved ? "Mazel tov" : "The answer was"}</p>
+            <h2 style={{ fontFamily: DISPLAY, fontSize: "clamp(28px, 6vw, 42px)", margin: "10px 0 6px", letterSpacing: "0.03em" }}>
+              {target.name}
+            </h2>
+            <p style={{ color: COLORS.parchDim, fontSize: 15, margin: "0 auto", maxWidth: 460, lineHeight: 1.55 }}>
+              {target.blurb}
+            </p>
+            <p style={{ fontFamily: MONO, fontSize: 13, marginTop: 18 }}>
+              {solved
+                ? `Solved in ${guesses.length} ${guesses.length === 1 ? "guess" : "guesses"}${hints > 1 ? ` with ${hints - 1} ${hints - 1 === 1 ? "hint" : "hints"}` : ""}.`
+                : `Gave up after ${guesses.length} ${guesses.length === 1 ? "guess" : "guesses"}.`}
+            </p>
+            <div style={{ marginTop: 16 }}><Btn onClick={newGame}>New game</Btn></div>
+          </div>
+        )}
+
+        {guesses.length > 0 ? (
+          <div>
+            {guesses.map((g) => (
+              <GuessRow key={g.guess.id} r={g} correct={g.guess.id === target.id} />
+            ))}
+            <Legend />
+          </div>
+        ) : !revealed ? (
+          <p style={{ textAlign: "center", color: COLORS.parchDim, fontSize: 14, marginTop: 40, lineHeight: 1.6 }}>
+            The answer is someone widely known. Many more names are guessable as probes.
+            <br />
+            Start anywhere. A bad guess is still information.
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function Btn({ children, onClick, disabled, ghost }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      background: ghost ? "transparent" : COLORS.tekhelet,
+      border: `1px solid ${ghost ? COLORS.edge : COLORS.tekhelet}`,
+      color: disabled ? COLORS.parchDim : COLORS.parchment,
+      fontFamily: MONO, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase",
+      padding: "10px 14px", borderRadius: 3,
+      cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
+    }}>{children}</button>
+  );
+}
+
+function Tile({ label, state, main, sub, arrow }) {
+  return (
+    <div style={{
+      background: tileBg(state),
+      border: `1px solid ${state === MISS ? COLORS.edge : "transparent"}`,
+      padding: "8px 8px 9px", borderRadius: 3, minHeight: 62,
+      display: "flex", flexDirection: "column", justifyContent: "space-between",
+    }}>
+      <div style={{
+        fontFamily: MONO, fontSize: 9, letterSpacing: "0.16em", textTransform: "uppercase",
+        color: state === MISS ? COLORS.parchDim : "rgba(239,231,213,0.75)",
+      }}>{label}</div>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 4, flexWrap: "wrap" }}>
+        <span style={{ fontFamily: DISPLAY, fontSize: 15, lineHeight: 1.15 }}>{main}</span>
+        {arrow && <span style={{ fontFamily: MONO, fontSize: 15, color: COLORS.brass, fontWeight: 700 }}>{arrow}</span>}
+      </div>
+      {sub && <div style={{ fontFamily: MONO, fontSize: 10, color: "rgba(239,231,213,0.7)", marginTop: 2 }}>{sub}</div>}
+    </div>
+  );
+}
+
+function GuessRow({ r, correct }) {
+  const g = r.guess;
+  const fieldText = r.fields.shared.length ? r.fields.shared.join(" · ") : g.fields.join(" · ");
+  return (
+    <div className="drow" style={{ marginBottom: 14 }}>
+      <div style={{
+        display: "flex", alignItems: "baseline", gap: 10, padding: "6px 2px 8px",
+        borderBottom: `1px solid ${COLORS.edge}`, marginBottom: 8,
+      }}>
+        <span style={{ fontFamily: DISPLAY, fontSize: 20, color: correct ? COLORS.brass : COLORS.parchment }}>
+          {g.name}
+        </span>
+        {correct && (
+          <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", color: COLORS.brass }}>✦ FOUND</span>
+        )}
+      </div>
+      <div className="dgrid">
+        <Tile label="Field" state={r.fields.state} main={fieldText} />
+        <Tile label="Gender" state={r.gender.state} main={g.gender === "M" ? "Male" : "Female"} />
+        <Tile label="Born" state={r.year.state} main={g.year} arrow={r.year.arrow} />
+        <Tile label="Birthplace" state={r.place.state} main={g.country}
+          sub={g.country === "United States" ? g.state : null} />
+        <Tile label="Living" state={r.living.state} main={g.living ? "Living" : "Deceased"} />
+        <Tile label="Fame era" state={r.era.state} main={g.era} arrow={r.era.arrow} />
+      </div>
+    </div>
+  );
+}
+
+function Legend() {
+  const items = [[COLORS.hit, "Match"], [COLORS.near, "Close"], [COLORS.miss, "No match"]];
+  return (
+    <div style={{
+      display: "flex", gap: 16, flexWrap: "wrap", marginTop: 22, paddingTop: 14,
+      borderTop: `1px solid ${COLORS.edge}`, fontFamily: MONO, fontSize: 11,
+      color: COLORS.parchDim, letterSpacing: "0.1em",
+    }}>
+      {items.map(([c, t]) => (
+        <span key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ width: 12, height: 12, background: c, border: `1px solid ${COLORS.edge}` }} />
+          {t.toUpperCase()}
+        </span>
+      ))}
+      <span style={{ marginLeft: "auto" }}>↑ LATER · ↓ EARLIER</span>
+    </div>
+  );
+}
