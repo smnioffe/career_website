@@ -878,7 +878,7 @@ export default function Dradel() {
           padding-left: max(16px, env(safe-area-inset-left));
           overflow-x: hidden;
         }
-        .dcontent { max-width: 920px; margin: 0 auto; }
+        .dcontent { width: 100%; max-width: 920px; margin: 0 auto; }
         .dheader { text-align: center; margin-bottom: 28px; }
         .dreidel-stage {
           position: relative;
@@ -995,23 +995,30 @@ export default function Dradel() {
           .dbyline:hover { background: rgba(199,154,69,.14); border-color: ${COLORS.brass}; transform: translateY(-1px); }
           .dbtn:not(:disabled):hover { filter: brightness(1.14); box-shadow: 0 8px 20px rgba(0,0,0,.18); transform: translateY(-1px); }
         }
-        @media (max-width: 479px) {
+        @media (max-width: 1024px) {
           .dapp {
-            padding-top: max(18px, env(safe-area-inset-top));
-            padding-right: max(12px, env(safe-area-inset-right));
+            padding-top: max(22px, env(safe-area-inset-top));
+            padding-right: max(16px, env(safe-area-inset-right));
             padding-bottom: max(48px, env(safe-area-inset-bottom));
-            padding-left: max(12px, env(safe-area-inset-left));
+            padding-left: max(16px, env(safe-area-inset-left));
           }
+          .dcontent { max-width: none; }
           .dheader { margin-bottom: 20px; }
-          .dreidel-stage { width: 76px; height: 76px; margin-bottom: 8px; }
-          .dreidel { width: 43px; height: 55px; }
-          .dtagline { letter-spacing: 0.18em !important; }
-          .dbyline { margin-top: 12px; padding: 7px 10px; font-size: 9px; }
-          .dgame { padding: 14px 12px; border-radius: 12px; }
-          .dhint { padding: 9px 10px !important; }
+          .dheader h1 { font-size: clamp(42px, 11vw, 68px) !important; }
+          .dreidel-stage { width: 82px; height: 82px; margin-bottom: 8px; }
+          .dreidel { width: 46px; height: 59px; }
+          .dtagline { font-size: 15px !important; letter-spacing: 0.18em !important; }
+          .dbyline { margin-top: 12px; padding: 9px 13px; font-size: 12px; }
+          .dlede { font-size: 18px !important; }
+          .dgame { padding: 22px 20px; border-radius: 14px; }
+          .dsection-head { font-size: 13px; }
+          .dhint { padding: 13px 15px !important; }
+          .dhint-text { font-size: 20px !important; line-height: 1.4; }
+          .dinput { min-height: 68px; font-size: 24px !important; }
+          .doption { min-height: 60px; font-size: 20px !important; }
           .dactions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-          .dactions > .dbtn { width: 100%; }
-          .dcount { grid-column: 2; margin-left: 0; justify-self: end; text-align: right; }
+          .dactions > .dbtn { width: 100%; min-height: 60px; font-size: 14px !important; }
+          .dcount { grid-column: 2; margin-left: 0; justify-self: end; text-align: right; font-size: 14px !important; }
           .dconfirm {
             grid-column: 1 / -1;
             display: grid;
@@ -1019,14 +1026,38 @@ export default function Dradel() {
             gap: 8px;
           }
           .dconfirm > span { grid-column: 1 / -1; }
-          .dconfirm > .dbtn { width: 100%; }
-          .dintro { margin-top: 30px !important; }
+          .dconfirm > .dbtn { width: 100%; min-height: 60px; font-size: 14px !important; }
+          .dintro { margin-top: 30px !important; font-size: 18px !important; }
           .dlegend-direction { width: 100%; margin-left: 0; }
+        }
+        @media (max-width: 479px) {
+          .dapp {
+            padding-top: max(18px, env(safe-area-inset-top));
+            padding-right: max(10px, env(safe-area-inset-right));
+            padding-left: max(10px, env(safe-area-inset-left));
+          }
+          .dheader h1 { font-size: clamp(40px, 11vw, 52px) !important; }
+          .dreidel-stage { width: 76px; height: 76px; }
+          .dreidel { width: 43px; height: 55px; }
+          .dtagline { font-size: 12px !important; }
+          .dbyline { padding: 7px 10px; font-size: 10px; }
+          .dlede { font-size: 15px !important; }
+          .dgame { padding: 16px 12px; border-radius: 12px; }
+          .dsection-head { gap: 8px; font-size: 10px; letter-spacing: .12em; }
+          .dsection-head > span { max-width: 50%; text-align: right; line-height: 1.35; }
+          .dhint { padding: 10px !important; }
+          .dhint-text { font-size: 17px !important; }
+          .dinput { min-height: 56px; font-size: 20px !important; }
+          .doption { min-height: 50px; font-size: 18px !important; }
+          .dactions > .dbtn { min-height: 48px; font-size: 12px !important; }
+          .dconfirm > .dbtn { min-height: 48px; font-size: 12px !important; }
+          .dcount { font-size: 12px !important; }
+          .dintro { font-size: 15px !important; }
         }
         @media (max-width: 359px) {
           .dgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
-        @media (min-width: 640px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
+        @media (min-width: 1025px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
         input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
       `}</style>
 
@@ -1048,7 +1079,7 @@ export default function Dradel() {
             <strong className="dbyline-name">Simon Ioffe</strong>
             <span className="dbyline-arrow" aria-hidden="true">→</span>
           </a>
-          <p style={{ color: COLORS.parchDim, fontSize: 13, margin: "10px 0 0", lineHeight: 1.5 }}>
+          <p className="dlede" style={{ color: COLORS.parchDim, fontSize: 13, margin: "10px 0 0", lineHeight: 1.5 }}>
             Every wrong guess tells you how the two people compare. Narrow it down.
           </p>
         </header>
@@ -1067,7 +1098,7 @@ export default function Dradel() {
                 marginBottom: 6, background: `linear-gradient(90deg, ${COLORS.ink2}, rgba(26,35,64,.7))`,
               }}>
                 <span style={{ fontFamily: DISPLAY, fontSize: 20, color: COLORS.brass, width: 18 }}>{HEB[i]}</span>
-                <span style={{ fontSize: 15 }}>{h}</span>
+                <span className="dhint-text" style={{ fontSize: 15 }}>{h}</span>
               </div>
             ))}
           </div>
