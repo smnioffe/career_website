@@ -823,23 +823,92 @@ export default function Dradel() {
   const revealed = status !== "playing";
 
   return (
-    <div style={{
-      minHeight: "100vh",
+    <div className="dapp" style={{
       background: `radial-gradient(120% 80% at 50% -10%, ${COLORS.panel} 0%, ${COLORS.ink} 60%)`,
-      color: COLORS.parchment, fontFamily: BODY, padding: "28px 16px 64px",
+      color: COLORS.parchment, fontFamily: BODY,
     }}>
       <style>{`
+        html, body, #root { margin: 0; min-height: 100%; background: ${COLORS.ink}; }
+        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        body { min-width: 280px; overflow-x: hidden; }
+        *, *::before, *::after { box-sizing: border-box; }
         @keyframes dspin { from { transform: rotate(0deg) scale(1) } 60% { transform: rotate(760deg) scale(1.08) } to { transform: rotate(1080deg) scale(1) } }
         @keyframes drop { from { opacity:0; transform: translateY(-10px) } to { opacity:1; transform:none } }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+        .dapp {
+          min-height: 100vh;
+          min-height: 100dvh;
+          padding: 28px 16px 64px;
+          padding-top: max(28px, env(safe-area-inset-top));
+          padding-right: max(16px, env(safe-area-inset-right));
+          padding-bottom: max(64px, env(safe-area-inset-bottom));
+          padding-left: max(16px, env(safe-area-inset-left));
+          overflow-x: hidden;
+        }
+        .dcontent { max-width: 880px; margin: 0 auto; }
+        .dheader { text-align: center; margin-bottom: 26px; }
+        .dsearch { position: relative; margin-bottom: 14px; }
+        .dinput { min-height: 52px; }
+        .dsuggestions {
+          max-height: min(336px, 42dvh);
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+        .doption {
+          appearance: none;
+          width: 100%;
+          min-height: 48px;
+          border: 0;
+          color: inherit;
+          text-align: left;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .dactions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 22px; }
+        .dcount { margin-left: auto; }
+        .dconfirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .dbtn {
+          min-height: 44px;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+        }
         .drow { animation: drop 240ms ease-out both; }
         .dgrid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; }
+        .dlegend-direction { margin-left: auto; }
+        @media (max-width: 479px) {
+          .dapp {
+            padding-top: max(18px, env(safe-area-inset-top));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-bottom: max(48px, env(safe-area-inset-bottom));
+            padding-left: max(12px, env(safe-area-inset-left));
+          }
+          .dheader { margin-bottom: 20px; }
+          .dtagline { letter-spacing: 0.18em !important; }
+          .dhint { padding: 9px 10px !important; }
+          .dactions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+          .dactions > .dbtn { width: 100%; }
+          .dcount { grid-column: 2; margin-left: 0; justify-self: end; text-align: right; }
+          .dconfirm {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+          }
+          .dconfirm > span { grid-column: 1 / -1; }
+          .dconfirm > .dbtn { width: 100%; }
+          .dintro { margin-top: 30px !important; }
+          .dlegend-direction { width: 100%; margin-left: 0; }
+        }
+        @media (max-width: 359px) {
+          .dgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
         @media (min-width: 640px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
         input:focus-visible, button:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
       `}</style>
 
-      <div style={{ maxWidth: 880, margin: "0 auto" }}>
-        <header style={{ textAlign: "center", marginBottom: 26 }}>
+      <div className="dcontent">
+        <header className="dheader">
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
             <Dreidel spinKey={spinKey} />
           </div>
@@ -849,7 +918,7 @@ export default function Dradel() {
           }}>
             DR<span style={{ color: COLORS.brass }}>Δ</span>DEL
           </h1>
-          <p style={{
+          <p className="dtagline" style={{
             fontFamily: MONO, fontSize: 12, letterSpacing: "0.22em",
             textTransform: "uppercase", color: COLORS.brass, margin: "8px 0 0",
           }}>Guess the famous Jew</p>
@@ -861,7 +930,7 @@ export default function Dradel() {
         {!revealed && (
           <div style={{ marginBottom: 18 }}>
             {hintText.slice(0, hints).map((h, i) => (
-              <div key={i} style={{
+              <div className="dhint" key={i} style={{
                 display: "flex", gap: 12, alignItems: "baseline",
                 borderLeft: `2px solid ${COLORS.brass}`, padding: "8px 14px",
                 marginBottom: 6, background: COLORS.ink2,
@@ -874,19 +943,28 @@ export default function Dradel() {
         )}
 
         {!revealed && (
-          <div style={{ position: "relative", marginBottom: 14 }}>
+          <div className="dsearch">
             <input
+              className="dinput"
               ref={inputRef} value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") { e.preventDefault(); submit(); }
-                else if (e.key === "ArrowDown") { e.preventDefault(); setHighlight((h) => Math.min(h + 1, matches.length - 1)); }
-                else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
+                else if (e.key === "ArrowDown" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.min(h + 1, matches.length - 1)); }
+                else if (e.key === "ArrowUp" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
                 else if (e.key === "Escape") setInput("");
               }}
               placeholder="Type a name…"
               aria-label="Guess a famous Jewish person"
+              aria-autocomplete="list"
+              aria-controls="dradel-suggestions"
+              aria-expanded={matches.length > 0}
+              aria-activedescendant={matches.length > 0 ? `dradel-option-${matches[highlight]?.id ?? matches[0].id}` : undefined}
+              role="combobox"
               autoComplete="off"
+              autoCapitalize="words"
+              enterKeyHint="search"
+              spellCheck="false"
               style={{
                 width: "100%", boxSizing: "border-box", background: COLORS.ink2,
                 border: `1px solid ${COLORS.edge}`, borderRadius: 4, color: COLORS.parchment,
@@ -894,26 +972,35 @@ export default function Dradel() {
               }}
             />
             {matches.length > 0 && (
-              <ul style={{
+              <ul className="dsuggestions" id="dradel-suggestions" role="listbox" style={{
                 listStyle: "none", margin: 0, padding: 0, position: "absolute", zIndex: 20,
                 left: 0, right: 0, background: COLORS.ink2, border: `1px solid ${COLORS.edge}`,
-                borderTop: "none", borderRadius: "0 0 4px 4px", overflow: "hidden",
+                borderTop: "none", borderRadius: "0 0 4px 4px",
               }}>
                 {matches.map((p, i) => (
-                  <li key={p.id}
-                    onMouseDown={(e) => { e.preventDefault(); submit(p); }}
-                    onMouseEnter={() => setHighlight(i)}
-                    style={{
+                  <li key={p.id} role="none">
+                    <button
+                      className="doption"
+                      id={`dradel-option-${p.id}`}
+                      type="button"
+                      role="option"
+                      aria-selected={i === highlight}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => submit(p)}
+                      onMouseEnter={() => setHighlight(i)}
+                      onFocus={() => setHighlight(i)}
+                      style={{
                       padding: "11px 16px", cursor: "pointer", fontFamily: DISPLAY, fontSize: 17,
                       background: i === highlight ? COLORS.tekhelet : "transparent",
                       display: "flex", justifyContent: "space-between", alignItems: "center",
                     }}>
-                    <span>{p.name}</span>
-                    {!p.answerable && (
-                      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
-                        PROBE
-                      </span>
-                    )}
+                      <span>{p.name}</span>
+                      {!p.answerable && (
+                        <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
+                          PROBE
+                        </span>
+                      )}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -925,7 +1012,7 @@ export default function Dradel() {
           <p style={{ fontFamily: MONO, fontSize: 12, color: COLORS.brass, margin: "0 0 12px" }}>{flash}</p>
         )}
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", marginBottom: 22 }}>
+        <div className="dactions">
           <Btn onClick={newGame}>New game</Btn>
           {!revealed && (
             <>
@@ -935,7 +1022,7 @@ export default function Dradel() {
               {!confirmGiveUp ? (
                 <Btn ghost onClick={() => setConfirmGiveUp(true)}>I give up</Btn>
               ) : (
-                <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <span className="dconfirm">
                   <span style={{ fontSize: 13, color: COLORS.parchDim }}>Reveal the mystery Jew?</span>
                   <Btn ghost onClick={() => { setStatus("gave-up"); setConfirmGiveUp(false); }}>Yes, reveal</Btn>
                   <Btn ghost onClick={() => setConfirmGiveUp(false)}>Keep going</Btn>
@@ -943,7 +1030,7 @@ export default function Dradel() {
               )}
             </>
           )}
-          <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 12, color: COLORS.parchDim }}>
+          <span className="dcount" style={{ fontFamily: MONO, fontSize: 12, color: COLORS.parchDim }}>
             {guesses.length} {guesses.length === 1 ? "guess" : "guesses"}
             {hints > 1 && ` · ${hints - 1} ${hints - 1 === 1 ? "hint" : "hints"}`}
           </span>
@@ -981,7 +1068,7 @@ export default function Dradel() {
             <Legend />
           </div>
         ) : !revealed ? (
-          <p style={{ textAlign: "center", color: COLORS.parchDim, fontSize: 14, marginTop: 40, lineHeight: 1.6 }}>
+          <p className="dintro" style={{ textAlign: "center", color: COLORS.parchDim, fontSize: 14, marginTop: 40, lineHeight: 1.6 }}>
             The answer is someone widely known. Many more names are guessable as probes.
             <br />
             Start anywhere. A bad guess is still information.
@@ -994,7 +1081,7 @@ export default function Dradel() {
 
 function Btn({ children, onClick, disabled, ghost }) {
   return (
-    <button onClick={onClick} disabled={disabled} style={{
+    <button className="dbtn" type="button" onClick={onClick} disabled={disabled} style={{
       background: ghost ? "transparent" : COLORS.tekhelet,
       border: `1px solid ${ghost ? COLORS.edge : COLORS.tekhelet}`,
       color: disabled ? COLORS.parchDim : COLORS.parchment,
@@ -1069,7 +1156,7 @@ function Legend() {
           {t.toUpperCase()}
         </span>
       ))}
-      <span style={{ marginLeft: "auto" }}>↑ LATER · ↓ EARLIER</span>
+      <span className="dlegend-direction">↑ LATER · ↓ EARLIER</span>
     </div>
   );
 }
