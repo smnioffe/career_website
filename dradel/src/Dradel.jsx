@@ -24,7 +24,7 @@ const MONO = "'Courier New', Courier, monospace";
 
 const ERAS = ["pre-1940","1940s","1950s","1960s","1970s","1980s","1990s","2000s","2010s","2020s"];
 
-/* ---- ANSWER ROSTER: the 100 who can be the mystery person ----
+/* ---- BASE ANSWER ROSTER: the original 100 mystery people ----
    [name, gender, birthYear, country, USstate, living, era, fields, blurb, [3 hints]] */
 const CORE = [
 ["Scarlett Johansson","F",1984,"United States","New York",true,"2000s",["Acting"],"Actor. Among the highest-grossing film leads of her generation.",["Voiced an operating system opposite Joaquin Phoenix","Played a Marvel superspy for a decade","Danish first name, Polish-Jewish mother, raised in Manhattan"]],
@@ -677,7 +677,51 @@ const EXTRA = [
 ["Lenny Bruce","M",1925,"United States","New York",false,"1950s",["Comedy","Stage"]],
 ];
 
-const ROSTER = [
+/* ---- ANSWERABLE ADDITIONS: imported from new_answerable_jews.csv ----
+   Existing IDs replace their probe/core record; new IDs extend the roster. */
+const ANSWERABLE_ADDITIONS = [
+[1451,"Sam Bankman-Fried","M",1992,"United States","California",true,"2020s",["Business","Tech"],"FTX founder convicted of fraud and conspiracy for stealing billions in customer funds; sentenced to 25 years in federal prison.",["Built a crypto exchange whose logo appeared on an NBA arena","Known by three initials and an unruly mop of hair","Convicted after FTX collapsed and sentenced to 25 years in federal prison"]],
+[1138,"Bernie Madoff","M",1938,"United States","New York",false,"2000s",["Business"],"Financier behind the largest Ponzi scheme in history; sentenced to 150 years and died in federal prison.",["Promised clients remarkably steady investment returns","His name became synonymous with massive financial fraud","Ran the largest Ponzi scheme in history and received a 150-year sentence"]],
+[1530,"Jeffrey Epstein","M",1953,"United States","New York",false,"2000s",["Business"],"Financier and convicted sex offender who cultivated an elite social network; died in federal custody while awaiting trial on sex-trafficking charges.",["Went from teaching at the Dalton School to working on Wall Street","Owned a private island and socialized with politicians, royals, and billionaires","A convicted sex offender who died in jail before his 2019 federal trial"]],
+[1130,"Harvey Weinstein","M",1952,"United States","New York",true,"1990s",["Film","Business"],"Co-founder of Miramax and formerly powerful film producer. Reporting about his sexual abuse helped ignite #MeToo; he was convicted of sex crimes in California and New York.",["His studio released Pulp Fiction, Good Will Hunting, and Shakespeare in Love","2017 reporting about numerous accusers helped ignite the #MeToo movement","Convicted of rape and sexual assault in California and of a criminal sexual act in New York"]],
+[32,"Woody Allen","M",1935,"United States","New York",true,"1970s",["Comedy","Film","Writing"],"Filmmaker and comedian. Annie Hall and Manhattan. Accused by adopted daughter Dylan Farrow of childhood sexual abuse; he denies it and was never charged.",["Neurotic New Yorker with a clarinet","Married Soon-Yi Previn, the adopted daughter of his former partner Mia Farrow","Accused by adopted daughter Dylan Farrow of childhood sexual abuse; he denies it and was never charged"]],
+[1105,"Roman Polanski","M",1933,"France","",true,"1960s",["Film"],"Oscar-winning director of Rosemary's Baby, Chinatown, and The Pianist. Pleaded guilty in 1977 to unlawful sexual intercourse with a minor and fled the U.S. before sentencing.",["Survived the Kraków Ghetto; his mother was murdered at Auschwitz","Directed Rosemary's Baby, Chinatown, and The Pianist","Pleaded guilty in a case involving a 13-year-old, then fled the United States before sentencing"]],
+[1001,"Jason Alexander","M",1959,"United States","New Jersey",true,"1990s",["Acting","Comedy","Television"],"Actor and comedian best known as George Costanza on Seinfeld.",["Won a Tony before becoming a sitcom icon","Voiced the title character on Duckman","Played George Costanza, master of bad instincts and elaborate lies"]],
+[1008,"David Schwimmer","M",1966,"United States","New York",true,"1990s",["Acting","Comedy","Television"],"Actor and director best known as Ross Geller on Friends.",["Voiced Melman the anxious giraffe in Madagascar","His sitcom character insisted they were on a break","Played paleontologist Ross Geller on Friends"]],
+[1052,"Andy Samberg","M",1978,"United States","California",true,"2000s",["Comedy","Acting","Music","Television"],"Comedian, actor, and musician. Saturday Night Live, The Lonely Island, and Brooklyn Nine-Nine.",["Helped make SNL's digital shorts an internet phenomenon","One-third of the comedy music group The Lonely Island","Played detective Jake Peralta on Brooklyn Nine-Nine"]],
+[1285,"Eugene Levy","M",1946,"Canada","",true,"1980s",["Comedy","Acting","Television"],"Canadian actor and comedian. SCTV, American Pie, and Schitt's Creek.",["Extremely expressive eyebrows","Played Jim's painfully earnest father in American Pie","Co-starred as Johnny Rose with his real-life son on Schitt's Creek"]],
+[1531,"Dan Levy","M",1983,"Canada","",true,"2010s",["Acting","Comedy","Television","Writing"],"Canadian actor, writer, and co-creator of Schitt's Creek.",["Started as an MTV Canada host","Co-created a sitcom with his real-life father Eugene","Played sweater-loving David Rose on Schitt's Creek"]],
+[1025,"Rashida Jones","F",1976,"United States","California",true,"2000s",["Acting","Television"],"Actor, writer, and producer known for The Office and Parks and Recreation.",["Daughter of Quincy Jones and Peggy Lipton","Played Karen Filippelli on The Office","Was Ann Perkins, Leslie Knope's beautiful tropical fish"]],
+[1296,"Sarah Michelle Gellar","F",1977,"United States","New York",true,"1990s",["Acting","Television"],"Actor best known for Buffy the Vampire Slayer, Cruel Intentions, and Scooby-Doo.",["Played Daphne in two live-action Scooby-Doo movies","Traded dangerous bets with Ryan Phillippe in Cruel Intentions","Saved Sunnydale as Buffy the Vampire Slayer"]],
+[1291,"Josh Gad","M",1981,"United States","Florida",true,"2010s",["Acting","Comedy","Stage"],"Actor and comedian known for Frozen, The Book of Mormon, and Beauty and the Beast.",["Originated Elder Cunningham in The Book of Mormon on Broadway","Played LeFou in a live-action Disney remake","Voices Olaf, the snowman who likes warm hugs"]],
+[1019,"Zoë Kravitz","F",1988,"United States","California",true,"2010s",["Acting","Music"],"Actor and musician known for Big Little Lies, High Fidelity, and The Batman.",["Daughter of Lenny Kravitz and Lisa Bonet","Led a television remake of High Fidelity","Played Catwoman opposite Robert Pattinson's Batman"]],
+[1012,"Joseph Gordon-Levitt","M",1981,"United States","California",true,"2000s",["Acting","Film"],"Actor and filmmaker. 3rd Rock from the Sun, (500) Days of Summer, and Inception.",["Grew up playing an alien disguised as a teenager on television","Had a nonlinear romance with Summer","Joined Leonardo DiCaprio's dream-heist team in Inception"]],
+[1015,"Alicia Silverstone","F",1976,"United States","California",true,"1990s",["Acting"],"Actor best known as Cher Horowitz in Clueless.",["Appeared in several Aerosmith videos before her biggest film","Her most famous character gave makeovers and matchmaking advice","Played Cher Horowitz in Clueless: as if!"]],
+[1013,"Andrew Garfield","M",1983,"United States","California",true,"2010s",["Acting","Film","Stage"],"British-American actor. The Social Network, The Amazing Spider-Man, and tick, tick... BOOM!",["Played Facebook co-founder Eduardo Saverin","Was the big-screen Spider-Man between Tobey Maguire and Tom Holland","Sang as Jonathan Larson in tick, tick... BOOM!"]],
+[1295,"Natasha Lyonne","F",1979,"United States","New York",true,"2010s",["Acting","Comedy","Television"],"Actor, writer, and director known for Orange Is the New Black and Russian Doll.",["Distinctive raspy voice and New York delivery","Played Nicky Nichols in a women's prison dramedy","Kept dying and restarting the same night in Russian Doll"]],
+[1050,"Fran Drescher","F",1957,"United States","New York",true,"1990s",["Acting","Television","Comedy"],"Actor and comedian best known for creating and starring in The Nanny.",["A nasal Queens accent and an unmistakable laugh","Her breakout character came from Flushing","Played Fran Fine on The Nanny"]],
+[1059,"Howard Stern","M",1954,"United States","New York",true,"1990s",["Journalism","Comedy","Television"],"Radio personality and interviewer who calls himself the King of All Media.",["Long hair, sunglasses, and a studio full of recurring characters","Moved his long-running radio show to SiriusXM","Calls himself the King of All Media"]],
+[1079,"Neil Diamond","M",1941,"United States","New York",true,"1960s",["Music","Writing"],"Brooklyn-born singer-songwriter behind Sweet Caroline and many other pop standards.",["Wrote I'm a Believer before the Monkees made it a hit","A sequined-shirt concert institution","Good times never seemed so good in Sweet Caroline"]],
+[1340,"Jack Antonoff","M",1984,"United States","New Jersey",true,"2010s",["Music"],"Musician and producer behind Bleachers and major albums by Taylor Swift, Lorde, and Lana Del Rey.",["Played guitar in the band that recorded We Are Young","Fronts Bleachers and celebrates his New Jersey roots","Frequent studio collaborator of Taylor Swift, Lorde, and Lana Del Rey"]],
+[1532,"P!nk","F",1979,"United States","Pennsylvania",true,"2000s",["Music"],"Pop-rock singer and songwriter born Alecia Moore, known for powerful vocals and aerial live performances.",["Born Alecia Moore in Pennsylvania","Often sings while performing aerial acrobatics above the crowd","Told everyone to Get the Party Started"]],
+[1533,"Jack Black","M",1969,"United States","California",true,"2000s",["Acting","Comedy","Music"],"Actor, comedian, and musician. School of Rock, Kung Fu Panda, and Tenacious D.",["One half of the comedy-rock duo Tenacious D","Taught children to shred in School of Rock","Voices the enthusiastic panda Po"]],
+[81,"Kevin Youkilis","M",1979,"United States","Ohio",true,"2000s",["Sports"],"Former Boston Red Sox first baseman and third baseman; three-time All-Star and two-time World Series champion.",["Known for an unusual batting stance and a talent for getting on base","Nicknamed the Greek God of Walks in Moneyball","Won two World Series championships with the Boston Red Sox"]],
+[1512,"Scott Galloway","M",1964,"United States","New York",true,"2010s",["Academia","Business"],"NYU Stern professor, entrepreneur, author, and outspoken commentator on technology, wealth, and young men.",["Marketing professor at NYU Stern","Co-hosts Pivot with Kara Swisher","Known online as Prof G"]],
+[54,"Benjamin Netanyahu","M",1949,"Israel","",true,"1990s",["Politics"],"Israeli politician known as Bibi and the country's longest-serving prime minister.",["Studied architecture and management at MIT","His brother Yonatan was killed leading the Entebbe rescue mission","Known as Bibi; Israel's longest-serving prime minister"]],
+[68,"Sam Altman","M",1985,"United States","Illinois",true,"2010s",["Tech","Business"],"Technology entrepreneur, former Y Combinator president, and co-founder and CEO of OpenAI.",["Previously led the startup accelerator Y Combinator","Was abruptly fired and reinstated during a five-day board crisis in 2023","Co-founded and leads the company behind ChatGPT"]],
+[19,"Jerry Seinfeld","M",1954,"United States","New York",true,"1990s",["Comedy","Television","Acting"],"Stand-up comedian and co-creator of Seinfeld.",["Co-created a show famously described as being about nothing","Voiced the lead insect in Bee Movie","Later drove comedians around to get coffee"]],
+[27,"Sacha Baron Cohen","M",1971,"United Kingdom","",true,"2000s",["Comedy","Acting"],"British comedian and actor known for Ali G, Borat, and Brüno.",["Cambridge-educated master of staying in character","First broke through as Ali G","Played a fictional reporter from Kazakhstan"]],
+[58,"Wolf Blitzer","M",1948,"Germany","",true,"1990s",["Journalism","Television"],"Journalist and longtime CNN anchor of The Situation Room.",["Born in postwar Germany to Holocaust survivors","A longtime face of CNN election-night coverage","Hosts The Situation Room"]],
+[55,"Chuck Schumer","M",1950,"United States","New York",true,"2000s",["Politics"],"Brooklyn-born U.S. senator from New York and longtime Democratic congressional leader.",["Harvard Law graduate who entered elected office in his twenties","Related to comedian Amy Schumer","New York senator known for visiting all 62 counties every year"]],
+[52,"Michael Bloomberg","M",1942,"United States","Massachusetts",true,"2000s",["Politics","Business"],"Founder of Bloomberg L.P., philanthropist, and three-term mayor of New York City.",["Grew up in Medford, Massachusetts","Financial data terminals carry his name","Served three terms as mayor of New York City"]],
+[1526,"Josh Shapiro","M",1973,"United States","Pennsylvania",true,"2020s",["Politics","Law"],"Pennsylvania politician who served as state attorney general before becoming governor.",["Former attorney general of Pennsylvania","Oversaw the rapid reopening of a collapsed stretch of Interstate 95","Elected governor of Pennsylvania in 2022"]],
+[34,"Bob Dylan","M",1941,"United States","Minnesota",true,"1960s",["Music","Writing"],"Singer-songwriter and Nobel laureate in Literature, born Robert Zimmerman.",["Born Robert Zimmerman in Minnesota","Caused a folk-world uproar by going electric at Newport","Won the Nobel Prize in Literature"]],
+[0,"Scarlett Johansson","F",1984,"United States","New York",true,"2000s",["Acting"],"Actor and one of the highest-grossing film leads of her generation.",["Voiced an operating system opposite Joaquin Phoenix","Played a Marvel superspy for more than a decade","Her character Natasha Romanoff is also called Black Widow"]],
+[1005,"Gwyneth Paltrow","F",1972,"United States","California",true,"1990s",["Acting","Business"],"Oscar-winning actor and founder of the lifestyle company Goop.",["Won an Oscar for Shakespeare in Love","Founded the wellness and lifestyle company Goop","Won a widely watched Utah trial over a ski-slope collision"]],
+[1534,"Billy Eichner","M",1978,"United States","New York",true,"2010s",["Comedy","Acting","Television"],"Comedian, actor, and creator of Billy on the Street.",["Had a Madonna-themed bar mitzvah","Became famous sprinting around New York and shouting questions at pedestrians","Created Billy on the Street and co-wrote and starred in Bros"]],
+];
+
+const BASE_ROSTER = [
   ...CORE.map((r, i) => ({
     id: i, answerable: true,
     name: r[0], gender: r[1], year: r[2], country: r[3], state: r[4],
@@ -688,6 +732,17 @@ const ROSTER = [
     name: r[0], gender: r[1], year: r[2], country: r[3], state: r[4],
     living: r[5], era: r[6], fields: r[7], blurb: "", hints: [],
   })),
+];
+
+const answerableById = new Map(ANSWERABLE_ADDITIONS.map((r) => [r[0], {
+  id: r[0], answerable: true,
+  name: r[1], gender: r[2], year: r[3], country: r[4], state: r[5],
+  living: r[6], era: r[7], fields: r[8], blurb: r[9], hints: r[10],
+}]));
+const baseIds = new Set(BASE_ROSTER.map((p) => p.id));
+const ROSTER = [
+  ...BASE_ROSTER.map((p) => answerableById.get(p.id) || p),
+  ...[...answerableById.values()].filter((p) => !baseIds.has(p.id)),
 ];
 
 const ANSWERS = ROSTER.filter((p) => p.answerable);
