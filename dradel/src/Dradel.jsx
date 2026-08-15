@@ -945,9 +945,12 @@ export default function Dradel() {
           text-transform: uppercase;
         }
         .dsection-head strong { color: ${COLORS.brass}; font-weight: 400; }
+        .dcontrols { position: relative; }
         .dsearch { position: relative; margin-bottom: 14px; }
-        .dinput { min-height: 54px; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+        .dinput-row { display: flex; gap: 8px; align-items: stretch; }
+        .dinput { flex: 1 1 auto; min-width: 0; min-height: 54px; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
         .dinput:focus { border-color: ${COLORS.brass} !important; box-shadow: 0 0 0 3px rgba(199,154,69,.12); background: #171F33 !important; }
+        .dsubmit { display: none; }
         .dsuggestions {
           max-height: min(336px, 42dvh);
           overflow-y: auto;
@@ -981,6 +984,7 @@ export default function Dradel() {
           transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease, filter 140ms ease;
         }
         .dbtn:active { transform: translateY(1px) scale(.99); }
+        .dshort-label { display: none; }
         .drow {
           animation: drop 240ms ease-out both;
           padding: 12px;
@@ -989,6 +993,18 @@ export default function Dradel() {
           background: rgba(19,26,42,.55);
         }
         .dgrid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:6px; }
+        .dguesses-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          margin: 0 2px 10px;
+          color: ${COLORS.parchDim};
+          font-family: ${MONO};
+          font-size: 10px;
+          letter-spacing: .15em;
+          text-transform: uppercase;
+        }
+        .dguesses-head strong { color: ${COLORS.brass}; font-weight: 400; }
         .dlegend-direction { margin-left: auto; }
         .dreveal { border-radius: 12px; box-shadow: 0 16px 44px rgba(0,0,0,.22); }
         @media (hover: hover) {
@@ -1030,32 +1046,106 @@ export default function Dradel() {
           .dintro { margin-top: 30px !important; font-size: 18px !important; }
           .dlegend-direction { width: 100%; margin-left: 0; }
         }
-        @media (max-width: 479px) {
+        @media (max-width: 767px) {
           .dapp {
-            padding-top: max(18px, env(safe-area-inset-top));
-            padding-right: max(10px, env(safe-area-inset-right));
-            padding-left: max(10px, env(safe-area-inset-left));
+            min-height: 100dvh;
+            padding-top: max(12px, env(safe-area-inset-top));
+            padding-right: max(12px, env(safe-area-inset-right));
+            padding-bottom: calc(170px + env(safe-area-inset-bottom));
+            padding-left: max(12px, env(safe-area-inset-left));
           }
-          .dheader h1 { font-size: clamp(40px, 11vw, 52px) !important; }
-          .dreidel-stage { width: 76px; height: 76px; }
-          .dreidel { width: 43px; height: 55px; }
-          .dtagline { font-size: 12px !important; }
-          .dbyline { padding: 7px 10px; font-size: 10px; }
-          .dlede { font-size: 15px !important; }
-          .dgame { padding: 16px 12px; border-radius: 12px; }
-          .dsection-head { gap: 8px; font-size: 10px; letter-spacing: .12em; }
+          .dcontent { max-width: 620px; }
+          .dheader { margin-bottom: 16px; }
+          .dheader h1 { font-size: clamp(40px, 13vw, 58px) !important; letter-spacing: .08em !important; text-indent: .08em !important; }
+          .dreidel-stage { width: 52px; height: 52px; margin-bottom: 7px; }
+          .dreidel-stage::after { content: none; }
+          .dreidel-orbit { inset: 6px; }
+          .dreidel { width: 28px; height: 36px; }
+          .dtagline { margin-top: 6px !important; font-size: 10.5px !important; letter-spacing: .24em !important; }
+          .dbyline { margin-top: 9px; padding: 7px 12px; font-size: 10px; }
+          .dlede { display: none; }
+          .dgame { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+          .dclue-section {
+            margin-bottom: 18px !important;
+            padding: 12px 14px 10px;
+            border: 1px solid rgba(46,58,92,.82);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(26,35,64,.72), rgba(19,26,42,.78));
+          }
+          .dsection-head { gap: 8px; font-size: 10px; letter-spacing: .14em; }
           .dsection-head > span { max-width: 50%; text-align: right; line-height: 1.35; }
-          .dhint { padding: 10px !important; }
+          .dclue-section .dsection-head { margin-bottom: 8px; }
+          .dhint { padding: 5px 4px 5px 10px !important; background: transparent !important; }
           .dhint-text { font-size: 17px !important; }
-          .dinput { min-height: 56px; font-size: 20px !important; }
-          .doption { min-height: 50px; font-size: 18px !important; }
-          .dactions > .dbtn { min-height: 48px; font-size: 12px !important; }
-          .dconfirm > .dbtn { min-height: 48px; font-size: 12px !important; }
-          .dcount { font-size: 12px !important; }
-          .dintro { font-size: 15px !important; }
+          .dcontrols {
+            position: fixed;
+            z-index: 40;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            padding: 18px max(12px, env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+            border-top: 1px solid rgba(46,58,92,.72);
+            background: linear-gradient(180deg, rgba(12,17,28,0), rgba(12,17,28,.96) 16px, ${COLORS.ink} 42px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+          }
+          .dsearch { margin: 0 0 9px; }
+          .dsearch > .dsection-head { display: none; }
+          .dinput { min-height: 52px; border: 1.5px solid ${COLORS.brass} !important; border-radius: 12px !important; font-size: 18px !important; padding: 0 14px !important; }
+          .dsubmit {
+            display: grid;
+            flex: 0 0 52px;
+            width: 52px;
+            min-height: 52px;
+            place-items: center;
+            border: 1px solid ${COLORS.tekhelet};
+            border-radius: 12px;
+            background: #315DA8;
+            color: white;
+            font: 600 23px/1 ${BODY};
+            cursor: pointer;
+            touch-action: manipulation;
+          }
+          .dsubmit:disabled { opacity: .45; cursor: default; }
+          .dsuggestions {
+            top: auto !important;
+            bottom: calc(100% + 7px);
+            max-height: min(330px, 42dvh);
+            border: 1px solid ${COLORS.edge} !important;
+            border-radius: 12px !important;
+            box-shadow: 0 -18px 50px rgba(0,0,0,.38);
+          }
+          .doption { min-height: 52px; font-size: 18px !important; }
+          .dactions { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+          .dactions > .dbtn { min-height: 42px; padding: 8px 6px !important; border-radius: 11px !important; font-size: 10px !important; letter-spacing: .1em !important; }
+          .dactions > .dbtn:nth-child(2) { border-color: #6B551F !important; background: #2A210D !important; color: #EDCB84 !important; }
+          .dcount { display: none; }
+          .dconfirm { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .dconfirm > span { text-align: center; }
+          .dconfirm > .dbtn { min-height: 42px; font-size: 10px !important; }
+          .dactions.is-confirming > .dbtn { display: none; }
+          .dcontrols.is-revealed .dactions { grid-template-columns: 1fr; }
+          .dfull-label { display: none; }
+          .dshort-label { display: inline; }
+          .dguesses-head { margin: 0 2px 10px; font-size: 10px; letter-spacing: .16em; }
+          .drow { padding: 9px !important; border-radius: 14px !important; background: rgba(19,26,42,.72); }
+          .drow-head { padding: 4px 4px 9px !important; }
+          .drow-name { font-size: 20px !important; font-weight: 700; }
+          .drow-index { margin-left: auto; color: ${COLORS.parchDim}; font-family: ${MONO}; font-size: 10px; }
+          .dgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+          .dtile { min-height: 64px !important; padding: 9px 10px 10px !important; border-radius: 10px !important; }
+          .dlegend { gap: 10px 14px !important; margin-top: 16px !important; font-size: 10px !important; }
+          .dlegend-direction { width: 100%; }
+          .dreveal { padding: 22px 16px !important; margin-bottom: 18px !important; }
+          .dintro { display: none; }
         }
         @media (max-width: 359px) {
-          .dgrid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+          .dapp { padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
+          .dheader h1 { font-size: 38px !important; }
+          .dtagline { font-size: 9px !important; }
+          .dbyline { font-size: 9px; }
+          .dcontrols { padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
+          .dactions > .dbtn { font-size: 9px !important; }
         }
         @media (min-width: 1025px){ .dgrid { grid-template-columns: repeat(6, minmax(0,1fr)); } }
         input:focus-visible, button:focus-visible, a:focus-visible { outline: 2px solid ${COLORS.brass}; outline-offset: 2px; }
@@ -1086,7 +1176,7 @@ export default function Dradel() {
 
         <main className="dgame">
         {!revealed && (
-          <div style={{ marginBottom: 18 }}>
+          <section className="dclue-section" style={{ marginBottom: 18 }}>
             <div className="dsection-head">
               <strong>Your clue</strong>
               <span>{hints === 1 ? "Opening clue" : `${hints} clues revealed`}</span>
@@ -1101,106 +1191,118 @@ export default function Dradel() {
                 <span className="dhint-text" style={{ fontSize: 15 }}>{h}</span>
               </div>
             ))}
-          </div>
+          </section>
         )}
 
-        {!revealed && (
-          <div className="dsearch">
-            <label className="dsection-head" htmlFor="dradel-guess">
-              <strong>Your guess</strong>
-              <span>Answers and probe names</span>
-            </label>
-            <input
-              className="dinput"
-              id="dradel-guess"
-              ref={inputRef} value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") { e.preventDefault(); submit(); }
-                else if (e.key === "ArrowDown" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.min(h + 1, matches.length - 1)); }
-                else if (e.key === "ArrowUp" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
-                else if (e.key === "Escape") setInput("");
-              }}
-              placeholder="Start typing a name…"
-              aria-label="Guess a famous Jewish person"
-              aria-autocomplete="list"
-              aria-controls="dradel-suggestions"
-              aria-expanded={matches.length > 0}
-              aria-activedescendant={matches.length > 0 ? `dradel-option-${matches[highlight]?.id ?? matches[0].id}` : undefined}
-              role="combobox"
-              autoComplete="off"
-              autoCapitalize="words"
-              enterKeyHint="search"
-              spellCheck="false"
-              style={{
-                width: "100%", boxSizing: "border-box", background: COLORS.ink2,
-                border: `1px solid ${COLORS.edge}`, borderRadius: 10, color: COLORS.parchment,
-                fontFamily: DISPLAY, fontSize: 20, padding: "14px 16px",
-              }}
-            />
-            {matches.length > 0 && (
-              <ul className="dsuggestions" id="dradel-suggestions" role="listbox" style={{
-                listStyle: "none", margin: 0, padding: 0, position: "absolute", zIndex: 20,
-                left: 0, right: 0, background: COLORS.ink2, border: `1px solid ${COLORS.edge}`,
-                borderTop: "none", borderRadius: "0 0 10px 10px",
-              }}>
-                {matches.map((p, i) => (
-                  <li key={p.id} role="none">
-                    <button
-                      className="doption"
-                      id={`dradel-option-${p.id}`}
-                      type="button"
-                      role="option"
-                      aria-selected={i === highlight}
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => submit(p)}
-                      onMouseEnter={() => setHighlight(i)}
-                      onFocus={() => setHighlight(i)}
-                      style={{
-                      padding: "11px 16px", cursor: "pointer", fontFamily: DISPLAY, fontSize: 17,
-                      background: i === highlight ? COLORS.tekhelet : "transparent",
-                      display: "flex", justifyContent: "space-between", alignItems: "center",
-                    }}>
-                      <span>{p.name}</span>
-                      {!p.answerable && (
-                        <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
-                          PROBE
-                        </span>
-                      )}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-
-        {flash && (
-          <p style={{ fontFamily: MONO, fontSize: 12, color: COLORS.brass, margin: "0 0 12px" }}>{flash}</p>
-        )}
-
-        <div className="dactions">
-          <Btn onClick={newGame}>New game</Btn>
+        <div className={`dcontrols${revealed ? " is-revealed" : ""}`}>
           {!revealed && (
-            <>
-              <Btn onClick={revealHint} disabled={hints >= 4}>
-                {hints >= 4 ? "No hints left" : "Another hint"}
-              </Btn>
-              {!confirmGiveUp ? (
-                <Btn ghost onClick={() => setConfirmGiveUp(true)}>I give up</Btn>
-              ) : (
-                <span className="dconfirm">
-                  <span style={{ fontSize: 13, color: COLORS.parchDim }}>Reveal the mystery Jew?</span>
-                  <Btn ghost onClick={giveUp}>Yes, reveal</Btn>
-                  <Btn ghost onClick={() => setConfirmGiveUp(false)}>Keep going</Btn>
-                </span>
+            <div className="dsearch">
+              <label className="dsection-head" htmlFor="dradel-guess">
+                <strong>Your guess</strong>
+                <span>Answers and probe names</span>
+              </label>
+              <div className="dinput-row">
+                <input
+                  className="dinput"
+                  id="dradel-guess"
+                  ref={inputRef} value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); submit(); }
+                    else if (e.key === "ArrowDown" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.min(h + 1, matches.length - 1)); }
+                    else if (e.key === "ArrowUp" && matches.length > 0) { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
+                    else if (e.key === "Escape") setInput("");
+                  }}
+                  placeholder="Start typing a name…"
+                  aria-label="Guess a famous Jewish person"
+                  aria-autocomplete="list"
+                  aria-controls="dradel-suggestions"
+                  aria-expanded={matches.length > 0}
+                  aria-activedescendant={matches.length > 0 ? `dradel-option-${matches[highlight]?.id ?? matches[0].id}` : undefined}
+                  role="combobox"
+                  autoComplete="off"
+                  autoCapitalize="words"
+                  enterKeyHint="go"
+                  spellCheck="false"
+                  style={{
+                    width: "100%", boxSizing: "border-box", background: COLORS.ink2,
+                    border: `1px solid ${COLORS.edge}`, borderRadius: 10, color: COLORS.parchment,
+                    fontFamily: DISPLAY, fontSize: 20, padding: "14px 16px",
+                  }}
+                />
+                <button
+                  className="dsubmit"
+                  type="button"
+                  onClick={() => submit()}
+                  disabled={!input.trim()}
+                  aria-label="Submit guess"
+                >→</button>
+              </div>
+              {matches.length > 0 && (
+                <ul className="dsuggestions" id="dradel-suggestions" role="listbox" style={{
+                  listStyle: "none", margin: 0, padding: 0, position: "absolute", zIndex: 20,
+                  left: 0, right: 0, background: COLORS.ink2, border: `1px solid ${COLORS.edge}`,
+                  borderTop: "none", borderRadius: "0 0 10px 10px",
+                }}>
+                  {matches.map((p, i) => (
+                    <li key={p.id} role="none">
+                      <button
+                        className="doption"
+                        id={`dradel-option-${p.id}`}
+                        type="button"
+                        role="option"
+                        aria-selected={i === highlight}
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => submit(p)}
+                        onMouseEnter={() => setHighlight(i)}
+                        onFocus={() => setHighlight(i)}
+                        style={{
+                        padding: "11px 16px", cursor: "pointer", fontFamily: DISPLAY, fontSize: 17,
+                        background: i === highlight ? COLORS.tekhelet : "transparent",
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}>
+                        <span>{p.name}</span>
+                        {!p.answerable && (
+                          <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
+                            PROBE
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-            </>
+            </div>
           )}
-          <span className="dcount" style={{ fontFamily: MONO, fontSize: 12, color: COLORS.parchDim }}>
-            {guesses.length} {guesses.length === 1 ? "guess" : "guesses"}
-            {hints > 1 && ` · ${hints - 1} ${hints - 1 === 1 ? "hint" : "hints"}`}
-          </span>
+
+          {flash && (
+            <p className="dflash" style={{ fontFamily: MONO, fontSize: 12, color: COLORS.brass, margin: "0 0 12px" }}>{flash}</p>
+          )}
+
+          <div className={`dactions${confirmGiveUp ? " is-confirming" : ""}`}>
+            <Btn onClick={newGame}>New game</Btn>
+            {!revealed && (
+              <>
+                <Btn onClick={revealHint} disabled={hints >= 4}>
+                  <span className="dfull-label">{hints >= 4 ? "No hints left" : "Another hint"}</span>
+                  <span className="dshort-label">{hints >= 4 ? "No hints" : "Hint"}</span>
+                </Btn>
+                {!confirmGiveUp ? (
+                  <Btn ghost onClick={() => setConfirmGiveUp(true)}>I give up</Btn>
+                ) : (
+                  <span className="dconfirm">
+                    <span style={{ fontSize: 13, color: COLORS.parchDim }}>Reveal the mystery Jew?</span>
+                    <Btn ghost onClick={giveUp}>Yes, reveal</Btn>
+                    <Btn ghost onClick={() => setConfirmGiveUp(false)}>Keep going</Btn>
+                  </span>
+                )}
+              </>
+            )}
+            <span className="dcount" style={{ fontFamily: MONO, fontSize: 12, color: COLORS.parchDim }}>
+              {guesses.length} {guesses.length === 1 ? "guess" : "guesses"}
+              {hints > 1 && ` · ${hints - 1} ${hints - 1 === 1 ? "hint" : "hints"}`}
+            </span>
+          </div>
         </div>
 
         {revealed && (
@@ -1228,12 +1330,16 @@ export default function Dradel() {
         )}
 
         {guesses.length > 0 ? (
-          <div>
-            {guesses.map((g) => (
-              <GuessRow key={g.guess.id} r={g} correct={g.guess.id === target.id} />
+          <section className="dguess-section">
+            <div className="dguesses-head">
+              <span>Your guesses</span>
+              <strong>{guesses.length} {guesses.length === 1 ? "guess" : "guesses"}</strong>
+            </div>
+            {guesses.map((g, index) => (
+              <GuessRow key={g.guess.id} r={g} correct={g.guess.id === target.id} number={guesses.length - index} />
             ))}
             <Legend />
-          </div>
+          </section>
         ) : !revealed ? (
           <p className="dintro" style={{ textAlign: "center", color: COLORS.parchDim, fontSize: 14, marginTop: 40, lineHeight: 1.6 }}>
             The answer is someone widely known. Many more names are guessable as probes.
@@ -1262,7 +1368,7 @@ function Btn({ children, onClick, disabled, ghost }) {
 
 function Tile({ label, state, main, sub, arrow }) {
   return (
-    <div style={{
+    <div className="dtile" style={{
       background: tileBg(state),
       border: `1px solid ${state === MISS ? COLORS.edge : "transparent"}`,
       padding: "8px 8px 9px", borderRadius: 6, minHeight: 62,
@@ -1281,21 +1387,22 @@ function Tile({ label, state, main, sub, arrow }) {
   );
 }
 
-function GuessRow({ r, correct }) {
+function GuessRow({ r, correct, number }) {
   const g = r.guess;
   const fieldText = r.fields.shared.length ? r.fields.shared.join(" · ") : g.fields.join(" · ");
   return (
     <div className="drow" style={{ marginBottom: 14 }}>
-      <div style={{
+      <div className="drow-head" style={{
         display: "flex", alignItems: "baseline", gap: 10, padding: "6px 2px 8px",
         borderBottom: `1px solid ${COLORS.edge}`, marginBottom: 8,
       }}>
-        <span style={{ fontFamily: DISPLAY, fontSize: 20, color: correct ? COLORS.brass : COLORS.parchment }}>
+        <span className="drow-name" style={{ fontFamily: DISPLAY, fontSize: 20, color: correct ? COLORS.brass : COLORS.parchment }}>
           {g.name}
         </span>
         {correct && (
           <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", color: COLORS.brass }}>✦ FOUND</span>
         )}
+        {!correct && <span className="drow-index">#{number}</span>}
       </div>
       <div className="dgrid">
         <Tile label="Field" state={r.fields.state} main={fieldText} />
@@ -1313,7 +1420,7 @@ function GuessRow({ r, correct }) {
 function Legend() {
   const items = [[COLORS.hit, "Match"], [COLORS.near, "Close"], [COLORS.miss, "No match"]];
   return (
-    <div style={{
+    <div className="dlegend" style={{
       display: "flex", gap: 16, flexWrap: "wrap", marginTop: 22, paddingTop: 14,
       borderTop: `1px solid ${COLORS.edge}`, fontFamily: MONO, fontSize: 11,
       color: COLORS.parchDim, letterSpacing: "0.1em",
