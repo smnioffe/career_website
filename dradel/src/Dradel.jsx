@@ -721,6 +721,36 @@ const ANSWERABLE_ADDITIONS = [
 [1534,"Billy Eichner","M",1978,"United States","New York",true,"2010s",["Comedy","Acting","Television"],"Comedian, actor, and creator of Billy on the Street.",["Had a Madonna-themed bar mitzvah","Became famous sprinting around New York and shouting questions at pedestrians","Created Billy on the Street and co-wrote and starred in Bros"]],
 ];
 
+/* ---- PROBE ADDITIONS: valid comparison guesses, never mystery answers ----
+   [id, name, gender, birthYear, country, USstate, living, era, fields] */
+const PROBE_ADDITIONS = [
+[2000,"Seth Green","M",1974,"United States","Pennsylvania",true,"1990s",["Acting","Comedy","Television"]],
+[2001,"Jason Biggs","M",1978,"United States","New Jersey",true,"1990s",["Acting","Comedy"]],
+[2002,"Hank Azaria","M",1964,"United States","New York",true,"1990s",["Acting","Comedy","Television"]],
+[2003,"David Duchovny","M",1960,"United States","New York",true,"1990s",["Acting","Television"]],
+[2004,"Julianna Margulies","F",1966,"United States","New York",true,"1990s",["Acting","Television"]],
+[2005,"B.J. Novak","M",1979,"United States","Massachusetts",true,"2000s",["Acting","Comedy","Writing","Television"]],
+[2006,"Liev Schreiber","M",1967,"United States","California",true,"2000s",["Acting","Film","Television"]],
+[2007,"Maggie Gyllenhaal","F",1977,"United States","New York",true,"2000s",["Acting","Film"]],
+[2008,"Zach Braff","M",1975,"United States","New Jersey",true,"2000s",["Acting","Comedy","Film","Television"]],
+[2009,"Maya Rudolph","F",1972,"United States","Florida",true,"2000s",["Acting","Comedy","Television"]],
+[2010,"Beanie Feldstein","F",1993,"United States","California",true,"2010s",["Acting","Comedy","Film"]],
+[2011,"Mayim Bialik","F",1975,"United States","California",true,"1990s",["Acting","Academia","Television"]],
+[2012,"Alyson Hannigan","F",1974,"United States","Washington DC",true,"1990s",["Acting","Comedy","Television"]],
+[2013,"Ben Platt","M",1993,"United States","California",true,"2010s",["Acting","Music","Stage"]],
+[2014,"Eric André","M",1983,"United States","Florida",true,"2010s",["Acting","Comedy","Television"]],
+[2015,"Tiffany Haddish","F",1979,"United States","California",true,"2010s",["Acting","Comedy"]],
+[2016,"Doja Cat","F",1995,"United States","California",true,"2020s",["Music"]],
+[2017,"Taika Waititi","M",1975,"New Zealand","",true,"2010s",["Acting","Comedy","Film","Writing"]],
+[2018,"Daveed Diggs","M",1982,"United States","California",true,"2010s",["Acting","Music","Stage"]],
+[2019,"Jon Bernthal","M",1976,"United States","Washington DC",true,"2010s",["Acting","Television"]],
+[2020,"Noah Schnapp","M",2004,"United States","New York",true,"2010s",["Acting","Television"]],
+[2021,"Troye Sivan","M",1995,"South Africa","",true,"2010s",["Acting","Music"]],
+[2022,"Zac Efron","M",1987,"United States","California",true,"2000s",["Acting","Music"]],
+[2023,"Mac Miller","M",1992,"United States","Pennsylvania",false,"2010s",["Music"]],
+[2024,"Joaquin Phoenix","M",1974,"Puerto Rico","",true,"2000s",["Acting","Film"]],
+];
+
 const BASE_ROSTER = [
   ...CORE.map((r, i) => ({
     id: i, answerable: true,
@@ -731,6 +761,11 @@ const BASE_ROSTER = [
     id: 1000 + i, answerable: false,
     name: r[0], gender: r[1], year: r[2], country: r[3], state: r[4],
     living: r[5], era: r[6], fields: r[7], blurb: "", hints: [],
+  })),
+  ...PROBE_ADDITIONS.map((r) => ({
+    id: r[0], answerable: false,
+    name: r[1], gender: r[2], year: r[3], country: r[4], state: r[5],
+    living: r[6], era: r[7], fields: r[8], blurb: "", hints: [],
   })),
 ];
 
@@ -766,6 +801,7 @@ function compare(g, t) {
 
   return {
     guess: g,
+    targetId: t.id,
     // any shared field counts as a match
     fields: { state: shared.length > 0 ? HIT : MISS, shared },
     gender: { state: g.gender === t.gender ? HIT : MISS },
@@ -819,6 +855,91 @@ function Dreidel({ spinKey }) {
   );
 }
 
+function GuessReveal({ reveal, onSkip }) {
+  const { result, landed } = reveal;
+  const correct = result.guess.id === result.targetId;
+  const states = [
+    result.fields.state,
+    result.gender.state,
+    result.year.state,
+    result.place.state,
+    result.living.state,
+    result.era.state,
+  ];
+  const matches = states.filter((state) => state === HIT).length;
+  const accent = correct ? COLORS.brass : "#4673CB";
+
+  return (
+    <div
+      className={`dguess-overlay${correct ? " is-correct" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Checking ${result.guess.name}`}
+      tabIndex={-1}
+      autoFocus
+      onClick={onSkip}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onSkip();
+        }
+      }}
+    >
+      <div className="dguess-reveal-name">
+        <span>Spinning for</span>
+        <strong>{result.guess.name}</strong>
+      </div>
+
+      <div className="dguess-reveal-stage" aria-hidden="true">
+        <span className="dguess-burst dguess-burst-one" style={{ borderColor: accent }} />
+        <span className="dguess-burst dguess-burst-two" style={{ borderColor: accent }} />
+        <svg className="dguess-big-dreidel" viewBox="0 0 60 76">
+          <defs>
+            <linearGradient id="dreidel-reveal-blue" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#5B87DC" />
+              <stop offset="0.55" stopColor={COLORS.tekhelet} />
+              <stop offset="1" stopColor="#172C5D" />
+            </linearGradient>
+          </defs>
+          <rect x="26" y="0" width="8" height="12" rx="2" fill={COLORS.brass} />
+          <path d="M10 12 h40 v34 l-20 22 -20 -22 z" fill="url(#dreidel-reveal-blue)"
+            stroke={COLORS.brass} strokeWidth="2" strokeLinejoin="round" />
+          <path d="M14 16 h30" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeLinecap="round" />
+          {!landed ? HEB.map((letter, index) => (
+            <text key={letter} className={`dguess-face dguess-face-${index + 1}`} x="30" y="40"
+              textAnchor="middle" fill={COLORS.parchment} style={{ font: `700 24px ${DISPLAY}` }}>
+              {letter}
+            </text>
+          )) : (
+            <text className="dguess-landed-letter" x="30" y="40" textAnchor="middle"
+              fill={COLORS.parchment} style={{ font: `700 24px ${DISPLAY}` }}>
+              {correct ? "ג" : "נ"}
+            </text>
+          )}
+        </svg>
+      </div>
+
+      <div className="dguess-reveal-result" aria-live="assertive">
+        {landed ? (
+          <>
+            <strong style={{ color: accent }}>
+              {correct ? "Gimel — correct!" : `Nun — ${matches} of 6 match`}
+            </strong>
+            <span className="dguess-result-dots" aria-hidden="true">
+              {states.map((state, index) => (
+                <i key={`${state}-${index}`} style={{ background: tileBg(state) }} />
+              ))}
+            </span>
+          </>
+        ) : <span className="dguess-waiting">Where will it land?</span>}
+        <button type="button" className="dguess-skip" onClick={(event) => { event.stopPropagation(); onSkip(); }}>
+          Tap to skip
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const HEB = ["נ", "ג", "ה", "ש"];
 
 /* ---------------- main ---------------- */
@@ -834,7 +955,10 @@ export default function Dradel() {
   const [flash, setFlash] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [unseen, setUnseen] = useState(() => ANSWERS.map((p) => p.id));
+  const [guessReveal, setGuessReveal] = useState(null);
   const inputRef = useRef(null);
+  const revealTimerRef = useRef(null);
+  const landTimerRef = useRef(null);
 
   const guessedIds = guesses.map((g) => g.guess.id);
 
@@ -853,6 +977,18 @@ export default function Dradel() {
 
   useEffect(() => setHighlight(0), [input]);
 
+  useEffect(() => () => {
+    clearTimeout(revealTimerRef.current);
+    clearTimeout(landTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!guessReveal) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [!!guessReveal]);
+
   function spin() {
     setSpinKey((k) => k + 1);
   }
@@ -870,6 +1006,9 @@ export default function Dradel() {
   }
 
   function newGame() {
+    clearTimeout(revealTimerRef.current);
+    clearTimeout(landTimerRef.current);
+    setGuessReveal(null);
     let pool = unseen.filter((id) => id !== target.id);
     if (pool.length === 0) pool = ANSWERS.map((p) => p.id);
     const pick = pool[Math.floor(Math.random() * pool.length)];
@@ -881,15 +1020,34 @@ export default function Dradel() {
     setTimeout(() => inputRef.current && inputRef.current.focus(), 60);
   }
 
+  function finishGuessReveal(result) {
+    clearTimeout(revealTimerRef.current);
+    clearTimeout(landTimerRef.current);
+    setGuessReveal(null);
+    setGuesses((prev) => [result, ...prev]);
+    if (result.guess.id === result.targetId) setStatus("won");
+    else setTimeout(() => inputRef.current && inputRef.current.focus(), 80);
+  }
+
+  function startGuessReveal(result) {
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    setGuessReveal({ result, landed: !!reduceMotion });
+    spin();
+    if (!reduceMotion) {
+      landTimerRef.current = setTimeout(() => {
+        setGuessReveal((current) => current ? { ...current, landed: true } : current);
+      }, 1050);
+    }
+    revealTimerRef.current = setTimeout(() => finishGuessReveal(result), reduceMotion ? 650 : 1900);
+  }
+
   function submit(person) {
-    if (status !== "playing") return;
+    if (status !== "playing" || guessReveal) return;
     const p = person || matches[highlight];
     if (!p) { setFlash("No one by that name in the pool. Try a few letters."); return; }
     if (guessedIds.includes(p.id)) { setFlash(`Already guessed ${p.name}.`); return; }
     setFlash(""); setInput("");
-    spin();
-    setGuesses((prev) => [compare(p, target), ...prev]);
-    if (p.id === target.id) setStatus("won");
+    startGuessReveal(compare(p, target));
   }
 
   const hintText = [
@@ -922,6 +1080,40 @@ export default function Dradel() {
           50% { opacity: .72; transform: scale(1.04); }
         }
         @keyframes drop { from { opacity:0; transform: translateY(-10px) } to { opacity:1; transform:none } }
+        @keyframes dGuessOverlayLife {
+          0% { opacity: 0; }
+          7%, 87% { opacity: 1; }
+          100% { opacity: 0; }
+        }
+        @keyframes dGuessRevealSpin {
+          0% { transform: rotate(0deg) scale(.28); opacity: 0; }
+          10% { opacity: 1; }
+          50% { transform: rotate(1260deg) scale(1.12); }
+          78% { transform: rotate(2010deg) scale(1); }
+          88% { transform: rotate(2056deg) scale(1.06); }
+          100% { transform: rotate(2048deg) scale(1); opacity: 1; }
+        }
+        @keyframes dGuessFaceCycle {
+          0%, 24.9% { opacity: 1; }
+          25%, 100% { opacity: 0; }
+        }
+        @keyframes dGuessBurst {
+          from { transform: scale(.34); opacity: .9; }
+          to { transform: scale(1.9); opacity: 0; }
+        }
+        @keyframes dGuessStamp {
+          from { transform: scale(1.45); opacity: 0; letter-spacing: .42em; }
+          to { transform: scale(1); opacity: 1; letter-spacing: .16em; }
+        }
+        @keyframes dGuessRise {
+          from { transform: translateY(14px); opacity: 0; }
+          to { transform: none; opacity: 1; }
+        }
+        @keyframes dGuessLetterIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes dGuessWaiting {
+          0%, 100% { opacity: .48; }
+          50% { opacity: 1; }
+        }
         @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
         .dapp {
           min-height: 100vh;
@@ -1062,6 +1254,112 @@ export default function Dradel() {
         .dguesses-head strong { color: ${COLORS.brass}; font-weight: 400; }
         .dlegend-direction { margin-left: auto; }
         .dreveal { border-radius: 12px; box-shadow: 0 16px 44px rgba(0,0,0,.22); }
+        .dguess-overlay {
+          position: fixed;
+          z-index: 100;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          align-content: center;
+          gap: clamp(18px, 4vh, 30px);
+          padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+          overflow: hidden;
+          background: radial-gradient(70% 48% at 50% 47%, rgba(43,78,150,.36), rgba(6,10,18,.94) 72%), rgba(6,10,18,.94);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          cursor: pointer;
+          touch-action: manipulation;
+          animation: dGuessOverlayLife 1900ms ease both;
+        }
+        .dguess-reveal-name {
+          display: grid;
+          gap: 7px;
+          justify-items: center;
+          text-align: center;
+          animation: dGuessRise 320ms ease-out 120ms both;
+        }
+        .dguess-reveal-name span {
+          color: ${COLORS.brass};
+          font-family: ${MONO};
+          font-size: 10px;
+          letter-spacing: .3em;
+          text-transform: uppercase;
+        }
+        .dguess-reveal-name strong {
+          max-width: min(88vw, 640px);
+          color: ${COLORS.parchment};
+          font-family: ${DISPLAY};
+          font-size: clamp(26px, 6vw, 46px);
+          line-height: 1.1;
+          text-wrap: balance;
+        }
+        .dguess-reveal-stage {
+          position: relative;
+          display: grid;
+          width: min(64vmin, 340px);
+          height: min(64vmin, 340px);
+          place-items: center;
+        }
+        .dguess-big-dreidel {
+          position: relative;
+          z-index: 1;
+          width: min(48vmin, 240px);
+          height: auto;
+          overflow: visible;
+          filter: drop-shadow(0 20px 38px rgba(0,0,0,.58));
+          transform-origin: 50% 45%;
+          animation: dGuessRevealSpin 1250ms cubic-bezier(.13,.72,.18,1) both;
+        }
+        .dguess-burst {
+          position: absolute;
+          inset: 0;
+          border: 2px solid ${COLORS.brass};
+          border-radius: 50%;
+          opacity: 0;
+          pointer-events: none;
+        }
+        .dguess-burst-one { animation: dGuessBurst 620ms cubic-bezier(.2,.7,.3,1) 1080ms both; }
+        .dguess-burst-two { inset: 14%; border-width: 1px; animation: dGuessBurst 700ms cubic-bezier(.2,.7,.3,1) 1170ms both; }
+        .dguess-face { opacity: 0; animation: dGuessFaceCycle 560ms steps(1,end) infinite; }
+        .dguess-face-2 { animation-delay: 140ms; }
+        .dguess-face-3 { animation-delay: 280ms; }
+        .dguess-face-4 { animation-delay: 420ms; }
+        .dguess-landed-letter { animation: dGuessLetterIn 180ms linear both; }
+        .dguess-reveal-result {
+          display: grid;
+          min-height: 84px;
+          gap: 11px;
+          justify-items: center;
+          text-align: center;
+        }
+        .dguess-reveal-result > strong {
+          font-family: ${MONO};
+          font-size: clamp(13px, 3.5vw, 17px);
+          letter-spacing: .16em;
+          text-transform: uppercase;
+          animation: dGuessStamp 360ms cubic-bezier(.2,.8,.25,1) both;
+        }
+        .dguess-waiting {
+          color: ${COLORS.parchDim};
+          font-family: ${MONO};
+          font-size: 11px;
+          letter-spacing: .2em;
+          text-transform: uppercase;
+          animation: dGuessWaiting 700ms ease-in-out infinite;
+        }
+        .dguess-result-dots { display: flex; gap: 7px; animation: dGuessRise 280ms ease-out both; }
+        .dguess-result-dots i { display: block; width: 13px; height: 13px; border: 1px solid rgba(255,255,255,.12); border-radius: 4px; }
+        .dguess-skip {
+          border: 0;
+          background: transparent;
+          color: #68748C;
+          font-family: ${MONO};
+          font-size: 10px;
+          letter-spacing: .18em;
+          text-transform: uppercase;
+          cursor: pointer;
+        }
+        .dguess-skip:hover { color: ${COLORS.parchDim}; }
         @media (hover: hover) {
           .dbyline:hover { background: rgba(199,154,69,.14); border-color: ${COLORS.brass}; transform: translateY(-1px); }
           .dbtn:not(:disabled):hover { filter: brightness(1.14); box-shadow: 0 8px 20px rgba(0,0,0,.18); transform: translateY(-1px); }
@@ -1397,13 +1695,19 @@ export default function Dradel() {
           </section>
         ) : !revealed ? (
           <p className="dintro" style={{ textAlign: "center", color: COLORS.parchDim, fontSize: 14, marginTop: 40, lineHeight: 1.6 }}>
-            The answer is someone widely known. Many more names are guessable as probes.
+            The answer is someone widely known.
             <br />
             Start anywhere. A bad guess is still information.
           </p>
         ) : null}
         </main>
       </div>
+      {guessReveal && (
+        <GuessReveal
+          reveal={guessReveal}
+          onSkip={() => finishGuessReveal(guessReveal.result)}
+        />
+      )}
     </div>
   );
 }
