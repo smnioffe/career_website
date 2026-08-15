@@ -2,3 +2,5 @@ node_modules/
 .vscode/
 .DS_Store
 reference/
+**/.claude/settings.local.json
+**/.claude/launch.json

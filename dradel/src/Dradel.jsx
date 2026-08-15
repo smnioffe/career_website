@@ -1400,14 +1400,28 @@ export default function Dradel() {
           .dlegend-direction { width: 100%; margin-left: 0; }
         }
         @media (max-width: 767px) {
+          html, body, #root { height: 100%; overflow: hidden; }
           .dapp {
-            min-height: 100dvh;
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100dvh;
+            padding: 0;
+            overflow: hidden;
+          }
+          .dcontent {
+            flex: 1 1 auto;
+            min-height: 0;
+            max-width: 620px;
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
             padding-top: max(12px, env(safe-area-inset-top));
             padding-right: max(12px, env(safe-area-inset-right));
-            padding-bottom: calc(170px + env(safe-area-inset-bottom));
+            padding-bottom: calc(158px + env(safe-area-inset-bottom));
             padding-left: max(12px, env(safe-area-inset-left));
           }
-          .dcontent { max-width: 620px; }
           .dheader { margin-bottom: 16px; }
           .dheader h1 { font-size: clamp(40px, 13vw, 58px) !important; letter-spacing: .08em !important; text-indent: .08em !important; }
           .dreidel-stage { width: 52px; height: 52px; margin-bottom: 7px; }
@@ -1493,7 +1507,7 @@ export default function Dradel() {
           .dintro { display: none; }
         }
         @media (max-width: 359px) {
-          .dapp { padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
+          .dcontent { padding-right: max(8px, env(safe-area-inset-right)); padding-left: max(8px, env(safe-area-inset-left)); }
           .dheader h1 { font-size: 38px !important; }
           .dtagline { font-size: 9px !important; }
           .dbyline { font-size: 9px; }
