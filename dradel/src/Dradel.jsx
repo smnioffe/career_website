@@ -1399,7 +1399,9 @@ export default function Dradel() {
           .dintro { margin-top: 30px !important; font-size: 18px !important; }
           .dlegend-direction { width: 100%; margin-left: 0; }
         }
-        @media (max-width: 767px) {
+        /* Touch devices get the phone shell even when the browser reports a
+           desktop-width viewport (e.g. Chrome's "Desktop site" mode). */
+        @media (max-width: 767px), (hover: none) and (pointer: coarse) and (max-width: 1024px) {
           html, body, #root { height: 100%; overflow: hidden; }
           .dapp {
             position: fixed;
