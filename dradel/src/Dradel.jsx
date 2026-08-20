@@ -731,6 +731,22 @@ const ANSWERABLE_ADDITIONS = [
 /* ---- PROBE ADDITIONS: valid comparison guesses, never mystery answers ----
    [id, name, gender, birthYear, country, USstate, living, era, fields] */
 const PROBE_ADDITIONS = [
+[2025,"Andy Cohen","M",1968,"United States","Missouri",true,"2010s",["Television","Journalism"]],
+[2026,"Bob Iger","M",1951,"United States","New York",true,"2000s",["Business","Television"]],
+[2028,"Kat Dennings","F",1986,"United States","Pennsylvania",true,"2010s",["Acting","Comedy","Television"]],
+[2029,"Adam Goldberg","M",1970,"United States","California",true,"1990s",["Acting","Film"]],
+[2030,"Elliott Gould","M",1938,"United States","New York",true,"1970s",["Acting","Film"]],
+[2031,"Kate Hudson","F",1979,"United States","California",true,"2000s",["Acting","Film"]],
+[2032,"Zoey Deutch","F",1994,"United States","California",true,"2010s",["Acting","Film"]],
+[2033,"Nat Wolff","M",1994,"United States","New York",true,"2010s",["Acting","Music"]],
+[2034,"Neil Gaiman","M",1960,"United Kingdom","",true,"1990s",["Writing"]],
+[2035,"David Blaine","M",1973,"United States","New York",true,"2000s",["Television"]],
+[2036,"David Axelrod","M",1955,"United States","New York",true,"2000s",["Journalism","Business"]],
+[2037,"Iliza Shlesinger","F",1983,"United States","New York",true,"2010s",["Comedy"]],
+[2038,"Paul Stanley","M",1952,"United States","New York",true,"1970s",["Music"]],
+[2040,"Rob Schneider","M",1963,"United States","California",true,"1990s",["Comedy","Acting"]],
+[2041,"Robert Downey Jr.","M",1965,"United States","New York",true,"2000s",["Acting","Film"]],
+[2042,"Chris Pine","M",1980,"United States","California",true,"2000s",["Acting","Film"]],
 [2000,"Seth Green","M",1974,"United States","Pennsylvania",true,"1990s",["Acting","Comedy","Television"]],
 [2001,"Jason Biggs","M",1978,"United States","New Jersey",true,"1990s",["Acting","Comedy"]],
 [2002,"Hank Azaria","M",1964,"United States","New York",true,"1990s",["Acting","Comedy","Television"]],
@@ -758,6 +774,20 @@ const PROBE_ADDITIONS = [
 [2024,"Joaquin Phoenix","M",1974,"Puerto Rico","",true,"2000s",["Acting","Film"]],
 ];
 
+/* ---- COMMONLY MISTAKEN: widely assumed to be Jewish, but are not ----
+   Valid comparison guesses, never mystery answers. Rendered with a visible
+   tag so the game never implies they are Jewish.
+   [id, name, gender, birthYear, country, USstate, living, era, fields, why] */
+const MYTH_PROBES = [
+[3000,"Rachel Brosnahan","F",1990,"United States","Wisconsin",true,"2010s",["Acting","Television"],"Played Midge Maisel for five seasons; grew up near Chicago among Jewish friends, but is not Jewish."],
+[3001,"Charlie Chaplin","M",1889,"United Kingdom","",false,"1920s",["Film","Comedy"],"Nazi propaganda insisted he was Jewish. He refused to deny it, saying that to do so would play into the hands of antisemites."],
+[3002,"Colin Powell","M",1937,"United States","New York",false,"1990s",["Politics"],"Son of Jamaican immigrants; picked up Yiddish working in a Jewish-owned Bronx store as a teenager."],
+[3003,"Bradley Cooper","M",1975,"United States","Pennsylvania",true,"2010s",["Acting","Film"],"Played Leonard Bernstein in Maestro, prosthetic nose and all, which set off a long argument about the casting."],
+[3004,"Helen Mirren","F",1945,"United Kingdom","",true,"2000s",["Acting","Film"],"Played Golda Meir in Golda, which drew the same casting debate."],
+[3005,"Madonna","F",1958,"United States","Michigan",true,"1980s",["Music"],"Studied Kabbalah for years and took the Hebrew name Esther. Raised Italian-American Catholic."],
+[3006,"Ariana Grande","F",1993,"United States","Florida",true,"2010s",["Music","Acting"],"Also studied Kabbalah. Italian-American by background."],
+];
+
 const BASE_ROSTER = [
   ...CORE.map((r, i) => ({
     id: i, answerable: true,
@@ -773,6 +803,11 @@ const BASE_ROSTER = [
     id: r[0], answerable: false,
     name: r[1], gender: r[2], year: r[3], country: r[4], state: r[5],
     living: r[6], era: r[7], fields: r[8], blurb: "", hints: [],
+  })),
+  ...MYTH_PROBES.map((r) => ({
+    id: r[0], answerable: false, myth: true,
+    name: r[1], gender: r[2], year: r[3], country: r[4], state: r[5],
+    living: r[6], era: r[7], fields: r[8], blurb: r[9], hints: [],
   })),
 ];
 
@@ -1638,11 +1673,6 @@ export default function Dradel() {
                         display: "flex", justifyContent: "space-between", alignItems: "center",
                       }}>
                         <span>{p.name}</span>
-                        {!p.answerable && (
-                          <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: "0.12em", color: COLORS.parchDim }}>
-                            PROBE
-                          </span>
-                        )}
                       </button>
                     </li>
                   ))}
@@ -1784,8 +1814,16 @@ function GuessRow({ r, correct, number }) {
         {correct && (
           <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.2em", color: COLORS.brass }}>✦ FOUND</span>
         )}
+        {g.myth && (
+          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: "0.14em", color: COLORS.brass }}>NOT JEWISH</span>
+        )}
         {!correct && <span className="drow-index">#{number}</span>}
       </div>
+      {g.myth && (
+        <p style={{ fontFamily: BODY, fontSize: 13, lineHeight: 1.5, color: COLORS.parchDim, margin: "0 0 10px" }}>
+          Common mix-up. {g.blurb}
+        </p>
+      )}
       <div className="dgrid">
         <Tile label="Field" state={r.fields.state} main={fieldText} />
         <Tile label="Gender" state={r.gender.state} main={g.gender === "M" ? "Male" : "Female"} />
