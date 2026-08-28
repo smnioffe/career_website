@@ -1,23 +1,33 @@
 # resume-personalsite
 
-Static portfolio site for `simonioffe.com`.
+Static portfolio site for `simonioffe.com`, deployed by GitHub Pages from
+`master` (root path).
 
-## Refactored authoring workflow
+## Structure
 
-The deployable site is still a static `index.html` + assets, but the Experience
-section now has a maintainable source structure:
+- `index.html` — the site. A single self-contained page, edited directly.
+- `assets/css/redesign.css` — shared styles, states and media queries.
+- `assets/js/redesign.js` — nav, portfolio, resume TOC, scroll reveal and the
+  generative network graphics.
+- `legacy.html` — archived copy of the pre-2026 site, kept for rollback and
+  comparison. Noindexed and not linked from the live site.
 
-- `src/templates/index.template.html` - full page template
-- `src/partials/experience-card-body.html` - Experience section source
-- `scripts/build-site.mjs` - builds `index.html` from template + partials
+`index.html` is no longer generated from `src/templates`. That pipeline was
+retired when the redesign shipped — see `DO_NOT_CHANGE.md`.
 
-## Commands
+## Local preview
 
-- Build page from source: `npm run build`
-- Local preview (example): `python3 -m http.server 4173 --bind 127.0.0.1`
+```
+python3 -m http.server 4173 --bind 127.0.0.1
+```
 
-## Reference snapshot
+Then open `http://127.0.0.1:4173`. Check responsive behavior at a real viewport
+width, not in a scaled preview pane.
 
-A baseline copy of the working site is preserved in:
+## Rollback
 
-- `reference/current-working-2026-02-05/`
+The site as it stood before the redesign is tagged `pre-redesign-2026-08-28`:
+
+```
+git checkout pre-redesign-2026-08-28 -- index.html && git commit
+```

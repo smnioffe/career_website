@@ -1,0 +1,32 @@
+/* Custom icomoon glyphs lifted from the original site (simon_main.css). */
+@font-face {
+  font-family: 'icomoon';
+  src: url('../fonts/icomoon.eot?tqpsue');
+  src: url('../fonts/icomoon.eot?tqpsue#iefix') format('embedded-opentype'),
+       url('../fonts/icomoon.ttf?tqpsue') format('truetype'),
+       url('../fonts/icomoon.woff?tqpsue') format('woff'),
+       url('../fonts/icomoon.svg?tqpsue#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.icon-saas-iconsi,
+.icon-ml-ai-iconsi,
+.icon-briefcase-iconsi,
+.icon-fortune500si {
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-ml-ai-iconsi:before { content: "\e901"; }
+.icon-briefcase-iconsi:before { content: "\e902"; }
+.icon-saas-iconsi:before { content: "\e903"; }
+.icon-fortune500si:before { content: "\e900"; }
