@@ -7,8 +7,8 @@ Static portfolio site for `simonioffe.com`, deployed by GitHub Pages from
 
 - `index.html` — the site. A single self-contained page, edited directly.
 - `assets/css/redesign.css` — shared styles, states and media queries.
-- `assets/js/redesign.js` — nav, portfolio, resume TOC, scroll reveal and the
-  generative network graphics.
+- `assets/js/redesign.js` — the generative network graphics and their motion,
+  portfolio, resume TOC, scroll reveal.
 - `legacy.html` — archived copy of the pre-2026 site, kept for rollback and
   comparison. Noindexed and not linked from the live site.
 

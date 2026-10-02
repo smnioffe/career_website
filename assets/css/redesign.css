@@ -164,9 +164,25 @@ section[id],header[id]{scroll-margin-top:78px}
    behind the portrait, and fills the short column in two places where the
    editorial grid would otherwise leave dead space. Always decorative, always
    behind the text, and it fades out as it falls. */
-/* Radial rather than linear: the graphic stays dense at the top right, where
-   the portrait is, and clears out of the headline and the role chips. */
-.net-hero{-webkit-mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%);mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%)}
+/* The hero network is pinned. The canvas is position:fixed, so it holds still
+   in the viewport while the hero's text scrolls over it; clip-path on the
+   section is what confines it. A fixed child ignores overflow:hidden but is
+   still clipped by an ancestor's clip-path, so the network shows only where
+   the hero is, and the About section wipes it away as it arrives -- no scroll
+   listener, nothing to drift out of sync.
+
+   It sits below the sticky nav so the dense corner is never parked under the
+   bar. --nav-h is measured by redesign.js; the values here are the nav's
+   one-row and two-row heights, used until the script has run.
+
+   The canvas's box lives here rather than inline on the element because an
+   inline style would outrank these rules. */
+:root{--nav-h:67px}
+@media (max-width:820px){:root{--nav-h:107px}}
+#home{-webkit-clip-path:inset(0);clip-path:inset(0)}
+/* The mask is radial rather than linear: the graphic stays dense at the top
+   right, where the portrait is, and clears out of the headline and chips. */
+.net-hero{position:fixed;top:var(--nav-h);left:0;width:100%;height:calc(100vh - var(--nav-h));height:calc(100lvh - var(--nav-h));opacity:.42;pointer-events:none;-webkit-mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%);mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%)}
 /* The fills are a background layer for their whole column, not a block tacked
    on below the text. They pass behind the copy at low weight and come up to
    full strength in the open space underneath it. */

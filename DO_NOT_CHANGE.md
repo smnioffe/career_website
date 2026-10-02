@@ -54,7 +54,27 @@ live archived copy at `legacy.html`. See "Rollback" below.
 - The flanking arrows are anchored to a fixed offset, not vertically centered.
   Centering re-positions them on every set, since the sets differ in height.
 
-## 6) Rollback
+## 6) Network Graphics and Motion
+- Every `canvas[data-net]` is drawn and animated by `initNetworks()` in
+  `assets/js/redesign.js`. There is one renderer; do not add a second "static"
+  one beside it, or the two will drift.
+- The layout comes from a seeded sequence (`data-net-seed`). The order of the
+  random draws in `build()` is load-bearing: change it and the graphic changes
+  on every canvas. At rest, the About, Résumé and Contact fields are
+  pixel-identical to the pre-motion site — keep it that way.
+- The motion is the diagonal sweep at `SPEED = 1.25`, and scrolling briefly
+  adds to it (`SCROLL_BOOST`). Both were tuned by Simon; do not retune them
+  without being asked.
+- Visitors with `prefers-reduced-motion` get the resting frame and no loop.
+  Fields animate only while their section is on screen and the tab is visible.
+- The hero network is pinned: `.net-hero` is `position:fixed` and `#home`
+  carries `clip-path:inset(0)`, which is what confines it to the hero and lets
+  the About section wipe it away. Remove either half and it breaks — the
+  canvas either scrolls away or covers the whole page.
+- The hero canvas's box (position, size, opacity) lives in `redesign.css`, not
+  inline on the element, for the reason in section 3.
+
+## 7) Rollback
 The previous site is recoverable in one command:
 
 ```
@@ -64,3 +84,7 @@ git checkout pre-redesign-2026-08-28 -- index.html && git commit
 It also remains viewable at `simonioffe.com/legacy.html` (noindexed, not
 linked from the site). Do not delete `legacy.html` or the tag without
 confirming the redesign is settled.
+
+To undo only the network motion and pinning (added 2026-10-02) and keep the
+redesign, revert that one commit; `git log --oneline -- assets/js/redesign.js`
+finds it.

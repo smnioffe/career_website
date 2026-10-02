@@ -1,32 +1,131 @@
-/* Career site redesign — staged, not yet live.
-   Ported from the Claude Design handoff "Simon Ioffe Site.dc.html".
-   The design tool wrapped this logic in a DCLogic component; here it is a
-   plain IIFE with the component's props baked in at their defaults
-   (accent + display face are set inline on [data-site] in the markup). */
+/* Behaviour for simonioffe.com (index.html): the network graphics and
+   their motion, the portfolio sets, the resume table of contents, scroll
+   reveal and the progress bar. */
 (function () {
   "use strict";
 
   var SCROLL_REVEAL = true;
 
-  /* Generative lines-and-dots networks (palette-matched) drawn on canvas[data-net] */
+  /* Generative lines-and-dots networks on every canvas[data-net].
+
+     Each canvas is a "field": a seeded layout of dots and links, drawn in the
+     section's palette. The fields are animated from one loop by a slow sweep
+     (see `sweep` below). With motion off — prefers-reduced-motion — every
+     field is drawn once at rest, which is the original static graphic.
+
+     Time is the only thing the loop scales. SPEED is the resting pace, and
+     scrolling adds to it briefly (SCROLL_BOOST), so the networks quicken
+     while the page moves and settle back afterwards. */
   function initNetworks() {
-    const draw = (cv) => {
+    const canvases = Array.prototype.slice.call(document.querySelectorAll("canvas[data-net]"));
+    if (!canvases.length) return;
+
+    const SPEED = 1.25;        // resting time scale
+    const SCROLL_BOOST = 1.2;  // extra at a brisk scroll: SPEED * (1 + 1.2) at most
+    const BRISK = 1400;        // px/s that counts as a brisk scroll
+
+    const PAL = {
+      light: { nodes: [["#1c1a17", .42], ["#a09789", .2], ["#b35f34", .14], ["#4a6fa5", .13], ["#6b7f4f", .11]], ink: [28, 26, 23], accent: [179, 95, 52] },
+      dark: { nodes: [["#f2ece2", .35], ["#a89e93", .3], ["#b35f34", .2], ["#8b8177", .15]], ink: [242, 236, 226], accent: [201, 121, 63] }
+    };
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const root = document.documentElement;
+    const lcg = (seed) => { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; };
+    const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
+    const mix = (a, b, t) => Math.round(a + (b - a) * t);
+
+    /* The motion: a soft, wide band sweeps diagonally across each field on a
+       25-second cycle. Dots and links inside the band warm toward the accent,
+       swell slightly and shift along the band's axis; everything also drifts
+       a few pixels on its own slow orbit so the field is never frozen between
+       passes. The band starts and ends a full width outside the layout, so
+       its influence is zero at the wrap and the loop has no seam.
+
+       The sweep was written by Gemini CLI against this engine's contract and
+       chosen from seven candidates; its maths is unchanged. */
+    const sweep = {
+      init(S) {
+        const angle = Math.PI * -0.25;
+        const st = S.store;
+        st.nx = Math.cos(angle);
+        st.ny = Math.sin(angle);
+        st.nd = [];
+        let minProj = Infinity, maxProj = -Infinity;
+        for (let i = 0; i < S.nodes.length; i++) {
+          const n = S.nodes[i];
+          const proj = n.hx * st.nx + n.hy * st.ny;
+          st.nd.push({ proj: proj });
+          if (proj < minProj) minProj = proj;
+          if (proj > maxProj) maxProj = proj;
+        }
+        st.bandWidth = 250;
+        st.minProj = minProj - st.bandWidth;
+        st.maxProj = maxProj + st.bandWidth;
+        st.range = st.maxProj - st.minProj;
+      },
+      update(S, t) {
+        const st = S.store, cycle = 25;
+        const progress = (t % cycle) / cycle;
+        const currentProj = st.minProj + progress * st.range;
+        for (let i = 0; i < S.nodes.length; i++) {
+          const n = S.nodes[i];
+          const dist = Math.abs(st.nd[i].proj - currentProj);
+          let influence = 0;
+          if (dist < st.bandWidth) influence = 0.5 * (1 + Math.cos(Math.PI * dist / st.bandWidth));
+          const driftX = Math.sin(t * 0.3 + n.p[1] * Math.PI * 2) * 8;
+          const driftY = Math.cos(t * 0.4 + n.p[2] * Math.PI * 2) * 8;
+          const shift = influence * 18;
+          n.x = n.hx + driftX - st.ny * shift;
+          n.y = n.hy + driftY + st.nx * shift;
+          n.glow = influence * 0.6;
+          n.scale = 1 + influence * 0.3;
+          n.am = 1 + influence * 0.5;
+        }
+        for (let i = 0; i < S.links.length; i++) {
+          const link = S.links[i];
+          const linkInf = (S.nodes[link.a].glow + S.nodes[link.b].glow) * 0.5;
+          link.glow = linkInf;
+          link.am = 1 + linkInf * 0.8;
+        }
+      }
+    };
+
+    function Field(cv) {
+      const mode = cv.getAttribute("data-net-mode") === "dark" ? "dark" : "light";
+      this.cv = cv;
+      this.g = cv.getContext("2d");
+      /* Visibility is judged by the section, not the canvas: the hero canvas
+         is pinned (position:fixed), so it is "in the viewport" forever, even
+         after its section has scrolled away and clipped it. */
+      this.section = cv.closest("section,header") || cv;
+      this.visible = true;
+      this.pal = PAL[mode];
+      this.anchor = cv.getAttribute("data-net-anchor") || "top";
+      this.density = parseFloat(cv.getAttribute("data-net-density") || "1");
+      this.seed = parseInt(cv.getAttribute("data-net-seed") || "7", 10) || 7;
+      this.linkMax = parseFloat(cv.getAttribute("data-net-link") || "150");
+      this.maxLinks = parseInt(cv.getAttribute("data-net-links") || "3", 10);
+      /* Motion is authored in px for the hero. Smaller fields declare a
+         shorter link reach, and k scales displacement to match, so a 300px
+         column does not get a 1440px hero's amplitude. */
+      this.k = Math.max(.5, Math.min(1, this.linkMax / 150));
+      this.S = { w: 0, h: 0, nodes: [], links: [], store: {} };
+    }
+
+    /* The layout. The seeded sequence here is load-bearing: it is what makes
+       the graphic the same on every visit. Per-node extras (p) come from a
+       second generator so they cannot disturb it. */
+    Field.prototype.build = function () {
+      const cv = this.cv, S = this.S;
       const w = cv.clientWidth, h = cv.clientHeight;
-      if (!w || !h) return;
-      const dpr = window.devicePixelRatio || 1;
+      if (!w || !h) { S.w = 0; S.h = 0; return; }
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       cv.width = Math.round(w * dpr);
       cv.height = Math.round(h * dpr);
-      const ctx = cv.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      const mode = cv.getAttribute("data-net-mode") || "light";
-      const anchor = cv.getAttribute("data-net-anchor") || "top";
-      const density = parseFloat(cv.getAttribute("data-net-density") || "1");
-      let seed = parseInt(cv.getAttribute("data-net-seed") || "7", 10) || 7;
-      const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-      const colors = mode === "dark"
-        ? [["#f2ece2", .35], ["#a89e93", .3], ["#b35f34", .2], ["#8b8177", .15]]
-        : [["#1c1a17", .42], ["#a09789", .2], ["#b35f34", .14], ["#4a6fa5", .13], ["#6b7f4f", .11]];
+      this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      S.w = w; S.h = h;
+
+      const rnd = lcg(this.seed), extra = lcg(this.seed * 7919 + 17), colors = this.pal.nodes;
       const pick = () => {
         let r = rnd(), acc = 0;
         for (let k = 0; k < colors.length; k++) { acc += colors[k][1]; if (r <= acc) return colors[k][0]; }
@@ -36,85 +135,179 @@
       /* The node count is per-area, so a small canvas gets proportionally few.
          This floor used to be 30, which packed a 314x190 fill with five times
          the hero's density -- that is what read as chaotic. */
-      const N = Math.max(8, Math.round(area / 3400 * density));
-      /* Link reach and dot size are fixed pixel values, so they cover far more
-         of a small canvas than a large one. Both are tunable per canvas; the
-         defaults leave the large ones exactly as they were. */
-      const linkMax = parseFloat(cv.getAttribute("data-net-link") || "150");
-      const maxLinks = parseInt(cv.getAttribute("data-net-links") || "3", 10);
+      const N = Math.max(8, Math.round(area / 3400 * this.density));
       const rScale = Math.max(.62, Math.min(1, Math.sqrt(area) / 560));
       const nodes = [];
       for (let i = 0; i < N; i++) {
         let x, y;
-        if (anchor === "top-right") { x = w - Math.pow(rnd(), 1.6) * w; y = Math.pow(rnd(), 1.9) * h; }
-        else if (anchor === "fill") {
+        if (this.anchor === "top-right") { x = w - Math.pow(rnd(), 1.6) * w; y = Math.pow(rnd(), 1.9) * h; }
+        else if (this.anchor === "fill") {
           /* Inset from the edges so dots and rings are never sliced in half by
              the canvas boundary. */
           const pad = Math.min(20, Math.min(w, h) * 0.07);
           x = pad + rnd() * (w - pad * 2); y = pad + rnd() * (h - pad * 2);
         }
         else { x = rnd() * w; y = Math.pow(rnd(), 2.1) * h; }
-        const depth = anchor === "top-right" ? Math.max(1 - x / w, y / h)
-          : anchor === "fill" ? 0.58 - 0.34 * (y / h)
+        const depth = this.anchor === "top-right" ? Math.max(1 - x / w, y / h)
+          : this.anchor === "fill" ? 0.58 - 0.34 * (y / h)
           : y / h;
+        const r = (1.4 + Math.pow(rnd(), 3) * 5.5) * rScale;
+        const ring = rnd() < 0.13;
+        const c = pick();
         nodes.push({
-          x, y,
-          r: (1.4 + Math.pow(rnd(), 3) * 5.5) * rScale,
-          ring: rnd() < 0.13,
-          c: pick(),
-          a: Math.max(.14, 1 - depth * 1.05)
+          hx: x, hy: y, x: x, y: y,
+          r: r, ring: ring, c: c, a: Math.max(.14, 1 - depth * 1.05),
+          p: [extra(), extra(), extra(), extra()],
+          glow: 0, scale: 1, am: 1
         });
       }
-      ctx.lineWidth = .8;
-      nodes.forEach((n, i) => {
-        nodes
-          .map((m, j) => ({ m, d: Math.hypot(m.x - n.x, m.y - n.y), j }))
-          .filter((o) => o.j > i && o.d > 6 && o.d < linkMax)
-          .sort((a, b) => a.d - b.d)
-          .slice(0, maxLinks)
-          .forEach((o) => {
-            const a = Math.min(n.a, o.m.a) * (1 - o.d / (linkMax * 1.1)) * .9;
-            if (a <= .02) return;
-            ctx.strokeStyle = mode === "dark"
-              ? "rgba(242,236,226," + (a * .55).toFixed(3) + ")"
-              : "rgba(28,26,23," + (a * .55).toFixed(3) + ")";
-            ctx.beginPath();
-            ctx.moveTo(n.x, n.y);
-            ctx.lineTo(o.m.x, o.m.y);
-            ctx.stroke();
-          });
-      });
-      nodes.forEach((n) => {
-        ctx.globalAlpha = n.a;
-        ctx.beginPath();
-        if (n.ring) {
-          ctx.strokeStyle = n.c;
-          ctx.lineWidth = 1.4;
-          ctx.arc(n.x, n.y, n.r + 2.4, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.fillStyle = n.c;
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, Math.max(1, n.r * .4), 0, Math.PI * 2);
-          ctx.fill();
-          ctx.lineWidth = .8;
-        } else {
-          ctx.fillStyle = n.c;
-          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-          ctx.fill();
+      /* Each node links to its nearest few later neighbours. The topology is
+         fixed at rest; the lines stretch as the dots move. */
+      const links = [];
+      for (let a = 0; a < N; a++) {
+        const cand = [];
+        for (let b = a + 1; b < N; b++) {
+          const d = Math.hypot(nodes[b].hx - nodes[a].hx, nodes[b].hy - nodes[a].hy);
+          if (d > 6 && d < this.linkMax) cand.push({ b: b, d: d });
         }
-      });
-      ctx.globalAlpha = 1;
+        cand.sort((p, q) => p.d - q.d);
+        for (let k = 0; k < Math.min(this.maxLinks, cand.length); k++) {
+          links.push({ a: a, b: cand[k].b, am: 1, glow: 0 });
+        }
+      }
+      S.nodes = nodes; S.links = links; S.store = {};
+      sweep.init(S);
     };
-    const all = Array.prototype.slice.call(document.querySelectorAll("canvas[data-net]"));
-    const drawAll = () => all.forEach(draw);
-    drawAll();
-    window.addEventListener("load", drawAll, { once: true });
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawAll);
-    let t;
-    window.addEventListener("resize", () => {
-      clearTimeout(t);
-      t = setTimeout(() => all.forEach(draw), 160);
+
+    Field.prototype.render = function () {
+      const S = this.S, g = this.g, nodes = S.nodes, links = S.links;
+      const ink = this.pal.ink, ac = this.pal.accent, acs = ac.join(",");
+      if (!S.w) return;
+      g.clearRect(0, 0, S.w, S.h);
+
+      for (let k = 0; k < links.length; k++) {
+        const L = links[k], p = nodes[L.a], q = nodes[L.b];
+        const dist = Math.hypot(q.x - p.x, q.y - p.y);
+        /* The cutoff is on the link's own strength, before any brightening,
+           and at exactly this value: it decides which of the faintest lines
+           exist at all, so it is part of the resting graphic. */
+        const base = Math.min(p.a, q.a) * (1 - dist / (this.linkMax * 1.1)) * .9;
+        if (base <= .02) continue;
+        const alpha = base * .55 * L.am;
+        if (L.glow > 0) {
+          const t = Math.min(1, L.glow);
+          g.strokeStyle = "rgba(" + mix(ink[0], ac[0], t) + "," + mix(ink[1], ac[1], t) + "," + mix(ink[2], ac[2], t) + "," + Math.min(1, alpha * (1 + t * 1.4)).toFixed(3) + ")";
+          g.lineWidth = .8 + t * .5;
+        } else {
+          g.strokeStyle = "rgba(" + ink[0] + "," + ink[1] + "," + ink[2] + "," + alpha.toFixed(3) + ")";
+          g.lineWidth = .8;
+        }
+        g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(q.x, q.y); g.stroke();
+      }
+
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i], r = n.r * n.scale;
+        if (n.glow > .01) {
+          const gr = r * 2.6 + 7;
+          const grad = g.createRadialGradient(n.x, n.y, r * .5, n.x, n.y, gr);
+          grad.addColorStop(0, "rgba(" + acs + "," + (n.glow * .5 * Math.min(1, n.a + .25)).toFixed(3) + ")");
+          grad.addColorStop(1, "rgba(" + acs + ",0)");
+          g.globalAlpha = 1; g.fillStyle = grad;
+          g.beginPath(); g.arc(n.x, n.y, gr, 0, Math.PI * 2); g.fill();
+        }
+        g.globalAlpha = Math.max(0, Math.min(1, n.a * n.am + n.glow * .3));
+        g.beginPath();
+        if (n.ring) {
+          g.strokeStyle = n.c; g.lineWidth = 1.4;
+          g.arc(n.x, n.y, r + 2.4, 0, Math.PI * 2); g.stroke();
+          g.fillStyle = n.c; g.beginPath();
+          g.arc(n.x, n.y, Math.max(1, r * .4), 0, Math.PI * 2); g.fill();
+        } else {
+          g.fillStyle = n.c;
+          g.arc(n.x, n.y, r, 0, Math.PI * 2); g.fill();
+        }
+      }
+      g.globalAlpha = 1;
+    };
+
+    Field.prototype.step = function (t) {
+      const nodes = this.S.nodes, k = this.k;
+      sweep.update(this.S, t);
+      if (k !== 1) {
+        for (let i = 0; i < nodes.length; i++) {
+          const n = nodes[i];
+          n.x = n.hx + (n.x - n.hx) * k; n.y = n.hy + (n.y - n.hy) * k;
+        }
+      }
+      this.render();
+    };
+
+    const fields = canvases.map((cv) => new Field(cv));
+    let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0;
+
+    function frame(now) {
+      raf = 0;
+      if (!running) return;
+      const raw = Math.min(.05, Math.max(0, (now - last) / 1000));
+      last = now;
+      /* Scroll velocity against BRISK. The follow rate is asymmetric: it
+         catches up in about a tenth of a second, so the response feels tied
+         to the hand, and takes most of a second to relax, so the motion
+         glides back to its resting pace instead of dropping to it. */
+      const y = window.scrollY || 0;
+      const target = raw > 0 ? clamp01(Math.abs(y - lastY) / raw / BRISK) : 0;
+      lastY = y;
+      boost += (target - boost) * (1 - Math.exp(-raw * (target > boost ? 9 : 2.2)));
+      if (boost < .001) boost = 0;
+      T += raw * SPEED * (1 + SCROLL_BOOST * boost);
+      for (let i = 0; i < fields.length; i++) {
+        const f = fields[i];
+        if (f.visible && f.S.w) f.step(T);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+
+    /* Run only while something is on screen, the tab is showing, and the
+       visitor has not asked for reduced motion. Otherwise hold the frame. */
+    function sync() {
+      const want = fields.some((f) => f.visible) && !document.hidden && !reduceMotion.matches;
+      if (want && !running) {
+        /* Resuming: forget the scroll that happened meanwhile, or the first
+           frame would read it as one enormous flick. */
+        running = true; last = performance.now(); lastY = window.scrollY || 0; boost = 0;
+        raf = requestAnimationFrame(frame);
+      } else if (!want && running) {
+        running = false;
+        if (raf) cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    }
+
+    /* The pinned hero canvas sits just below the sticky nav (see .net-hero in
+       redesign.css), and the nav is one row or two depending on width. */
+    function setNavHeight() {
+      const nav = document.querySelector(".site-nav");
+      if (nav) root.style.setProperty("--nav-h", Math.round(nav.getBoundingClientRect().height) + "px");
+    }
+
+    setNavHeight();
+    fields.forEach((f) => {
+      f.build();
+      f.render();
+      let rt;
+      /* A canvas resizes when the window does, when web fonts land and move
+         the layout, and when a column's sibling changes height. */
+      const rebuild = () => { clearTimeout(rt); rt = setTimeout(() => { f.build(); if (!running) f.render(); }, 140); };
+      if (window.ResizeObserver) new ResizeObserver(rebuild).observe(f.cv);
+      else window.addEventListener("resize", rebuild);
+      if (window.IntersectionObserver) {
+        new IntersectionObserver((es) => { f.visible = es[es.length - 1].isIntersecting; sync(); }, { threshold: 0 }).observe(f.section);
+      }
     });
+    window.addEventListener("resize", setNavHeight);
+    document.addEventListener("visibilitychange", sync);
+    if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", () => { sync(); if (!running) fields.forEach((f) => { f.build(); f.render(); }); });
+    sync();
   }
 
   /* The link's own href is the single source of truth for which PDF is current
