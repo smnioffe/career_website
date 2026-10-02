@@ -65,6 +65,10 @@ live archived copy at `legacy.html`. See "Rollback" below.
 - The motion is the diagonal sweep at `SPEED = 1.25`, and scrolling briefly
   adds to it (`SCROLL_BOOST`). Both were tuned by Simon; do not retune them
   without being asked.
+- The animation clock does not start at zero. `sweepStart()` starts it just
+  before the band reaches the visible top-right of the hero, so the sweep is
+  the first thing a visitor sees. Started from zero, the band spends its first
+  ~11 seconds under the hero's mask and the page appears to show only drift.
 - Visitors with `prefers-reduced-motion` get the resting frame and no loop.
   Fields animate only while their section is on screen and the tab is visible.
 - The hero network is pinned: `.net-hero` is `position:fixed` and `#home`

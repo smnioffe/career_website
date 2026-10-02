@@ -23,6 +23,7 @@
     const SPEED = 1.25;        // resting time scale
     const SCROLL_BOOST = 1.2;  // extra at a brisk scroll: SPEED * (1 + 1.2) at most
     const BRISK = 1400;        // px/s that counts as a brisk scroll
+    const CYCLE = 25;          // seconds of animation time per sweep pass
 
     const PAL = {
       light: { nodes: [["#1c1a17", .42], ["#a09789", .2], ["#b35f34", .14], ["#4a6fa5", .13], ["#6b7f4f", .11]], ink: [28, 26, 23], accent: [179, 95, 52] },
@@ -64,8 +65,8 @@
         st.range = st.maxProj - st.minProj;
       },
       update(S, t) {
-        const st = S.store, cycle = 25;
-        const progress = (t % cycle) / cycle;
+        const st = S.store;
+        const progress = (t % CYCLE) / CYCLE;
         const currentProj = st.minProj + progress * st.range;
         for (let i = 0; i < S.nodes.length; i++) {
           const n = S.nodes[i];
@@ -242,6 +243,37 @@
       this.render();
     };
 
+    /* Where in its cycle the sweep should be when the page loads.
+
+       Each pass crosses the whole layout, but in the hero only the top-right
+       corner is visible — the dots fade toward the headline and the CSS mask
+       hides the rest. Started from zero, the band spent its first ~11 seconds
+       in the hidden bottom-left, so a visitor saw only the drift. This finds
+       where the band would light the most visible dots, and starts the clock
+       LEAD seconds before that: the first thing on screen is the sweep
+       arriving. Only the hero is aligned; it is what a page load shows, and
+       the loop's clock is shared by every field.
+
+       Visibility is weighted by each dot's own alpha, which already encodes the
+       top-right falloff, squared to track the mask's steeper fade. */
+    function sweepStart(hero) {
+      const LEAD = 2.5;
+      if (!hero || !hero.S.w) return 0;
+      const S = hero.S, st = S.store, bw = st.bandWidth;
+      let best = st.minProj, bestScore = -1;
+      for (let k = 0; k <= 200; k++) {
+        const P = st.minProj + st.range * k / 200;
+        let score = 0;
+        for (let i = 0; i < S.nodes.length; i++) {
+          const d = Math.abs(st.nd[i].proj - P);
+          if (d < bw) score += S.nodes[i].a * S.nodes[i].a * .5 * (1 + Math.cos(Math.PI * d / bw));
+        }
+        if (score > bestScore) { bestScore = score; best = P; }
+      }
+      const t = CYCLE * (best - st.minProj) / st.range - LEAD * SPEED;
+      return ((t % CYCLE) + CYCLE) % CYCLE;
+    }
+
     const fields = canvases.map((cv) => new Field(cv));
     let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0;
 
@@ -307,8 +339,10 @@
     window.addEventListener("resize", setNavHeight);
     document.addEventListener("visibilitychange", sync);
     if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", () => { sync(); if (!running) fields.forEach((f) => { f.build(); f.render(); }); });
+    T = sweepStart(fields.find((f) => f.cv.classList.contains("net-hero")));
     sync();
   }
+
 
   /* The link's own href is the single source of truth for which PDF is current
      -- this used to be hardcoded here as well, which is how it went stale. */
