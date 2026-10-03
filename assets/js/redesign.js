@@ -13,16 +13,24 @@
      (see `sweep` below). With motion off — prefers-reduced-motion — every
      field is drawn once at rest, which is the original static graphic.
 
-     Time is the only thing the loop scales. SPEED is the resting pace, and
-     scrolling adds to it briefly (SCROLL_BOOST), so the networks quicken
-     while the page moves and settle back afterwards. */
+     Time is the only thing the loop scales. SPEED is the resting pace and
+     SCROLL_SPEED the pace while the page is scrolling: the networks switch
+     up as soon as it moves and drop straight back when it stops. */
   function initNetworks() {
     const canvases = Array.prototype.slice.call(document.querySelectorAll("canvas[data-net]"));
     if (!canvases.length) return;
 
     const SPEED = 1.25;        // resting time scale
-    const SCROLL_BOOST = 1.2;  // extra at a brisk scroll: SPEED * (1 + 1.2) at most
-    const BRISK = 1400;        // px/s that counts as a brisk scroll
+    const SCROLL_SPEED = 2.25; // time scale while the page is scrolling
+    /* How "scrolling" is judged. Mouse wheels and some trackpads move the page
+       in steps with short pauses between them, so a scroll counts as ongoing
+       until the page has been still for HOLD seconds -- otherwise the speed
+       would flicker down between steps. The switch itself eases over a few
+       hundredths of a second each way: fast enough to read as immediate, but
+       not a one-frame jump in speed, which shows as a jolt. */
+    const HOLD = .12;          // s of stillness before a scroll counts as over
+    const EASE_UP = .035;      // s, time constant switching up
+    const EASE_DOWN = .06;     // s, time constant switching back
     const CYCLE = 25;          // seconds of animation time per sweep pass
 
     const PAL = {
@@ -275,23 +283,24 @@
     }
 
     const fields = canvases.map((cv) => new Field(cv));
-    let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0;
+    let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0, lastMove = -1e9;
 
     function frame(now) {
       raf = 0;
       if (!running) return;
       const raw = Math.min(.05, Math.max(0, (now - last) / 1000));
       last = now;
-      /* Scroll velocity against BRISK. The follow rate is asymmetric: it
-         catches up in about a tenth of a second, so the response feels tied
-         to the hand, and takes most of a second to relax, so the motion
-         glides back to its resting pace instead of dropping to it. */
+      /* Any movement of the page counts, whatever its speed: a gentle scroll
+         gets the same lift as a fast one. boost runs 0..1 between the two
+         paces. */
       const y = window.scrollY || 0;
-      const target = raw > 0 ? clamp01(Math.abs(y - lastY) / raw / BRISK) : 0;
+      if (Math.abs(y - lastY) >= .5) lastMove = now;
       lastY = y;
-      boost += (target - boost) * (1 - Math.exp(-raw * (target > boost ? 9 : 2.2)));
-      if (boost < .001) boost = 0;
-      T += raw * SPEED * (1 + SCROLL_BOOST * boost);
+      const target = (now - lastMove) / 1000 < HOLD ? 1 : 0;
+      boost += (target - boost) * (1 - Math.exp(-raw / (target > boost ? EASE_UP : EASE_DOWN)));
+      if (boost < .002) boost = 0;
+      if (boost > .998) boost = 1;
+      T += raw * (SPEED + (SCROLL_SPEED - SPEED) * boost);
       for (let i = 0; i < fields.length; i++) {
         const f = fields[i];
         if (f.visible && f.S.w) f.step(T);
@@ -306,7 +315,7 @@
       if (want && !running) {
         /* Resuming: forget the scroll that happened meanwhile, or the first
            frame would read it as one enormous flick. */
-        running = true; last = performance.now(); lastY = window.scrollY || 0; boost = 0;
+        running = true; last = performance.now(); lastY = window.scrollY || 0; boost = 0; lastMove = -1e9;
         raf = requestAnimationFrame(frame);
       } else if (!want && running) {
         running = false;
