@@ -40,6 +40,13 @@ img{max-width:100%;display:block}
    "Employee of the Year" onto three lines. */
 @media (max-width:900px){.awards-grid{grid-template-columns:1fr 1fr !important;gap:36px 40px}}
 @media (max-width:640px){.focus-grid{grid-template-columns:1fr !important}.awards-grid{grid-template-columns:1fr !important}}
+/* Ten focus cards in three columns would strand one on a row of its own, so
+   the two flagship cards span two columns (twelve cells, four full rows). At
+   two columns they take a full row each; on a phone every card does, and the
+   span must be released there or it forces a phantom second column. */
+.focus-grid > .focus-wide{grid-column:span 2}
+.focus-wide p{max-width:74ch}
+@media (max-width:640px){.focus-grid > .focus-wide{grid-column:auto}}
 /* Grid items default to min-width:auto, so a wide child can push a column past
    its track and blow out the row. */
 .two-col > *,.rail-grid > *,.hero-grid > *,.pf-grid > *{min-width:0}
