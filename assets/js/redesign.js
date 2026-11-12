@@ -179,7 +179,8 @@
          the top, and the column fills from the bottom -- they are built the
          same way and flipped, so they rise under the text instead of
          crossing it. */
-      const fill = this.anchor === "fill", right = this.anchor === "top-right";
+      const fill = this.anchor === "fill";
+      let right = this.anchor === "top-right";
       /* u scales every length to the field: 1 for the hero, about .6 for a
          narrow column, so a small field is a smaller network, not a crowd. */
       const u = Math.max(.55, Math.min(1, Math.sqrt(w * h) / 900));
@@ -222,7 +223,8 @@
           }
         }
       }
-      if (!fill && wide) textTop = firstText;
+      /* Above the text, the band runs the full width, like a banner. */
+      if (!fill && wide) { textTop = firstText; right = false; }
       const tailCap = fill ? free - 8 : Math.min(h * .66, textTop);
       const BH = fill ? free * .6 : Math.min(h * this.band, tailCap * .7);   // depth of the dense band
       const tailMax = fill ? tailCap : Math.min(BH * 1.95, tailCap);
@@ -283,15 +285,15 @@
       const place = (spot, r, kind, c) => {
         for (let t = 0; t < 6; t++) {
           const xy = spot();
-          /* In a column, a spot past the edge is skipped, not pushed onto the
-             edge -- pushing lines dots up in a row along the bottom. */
-          if (fill && (xy[0] < pad || xy[0] > w - pad || xy[1] < pad * 1.5 || xy[1] > tailMax)) continue;
+          /* A spot past the band's edge (or a column's) is skipped, not pushed
+             onto the edge -- pushing lines dots up in a row along it. */
+          if (xy[1] > tailMax || (fill && (xy[0] < pad || xy[0] > w - pad || xy[1] < pad * 1.5))) continue;
           const x = clampX(xy[0]), y = clampY(xy[1]), rr = r * u + (kind === "target" ? 3 * u : 0);
           if (!onText(x, y, rr) && clear(x, y, rr)) return add(x, y, r, kind, c);
         }
         return -1;
       };
-      const STR = { spine: .66, ray: .36, spoke: .5, bridge: .26 };
+      const STR = { spine: .5, ray: .27, spoke: .38, bridge: .2 };
       const link = (i, j, type) => {
         if (i < 0 || j < 0 || i === j) return;
         const key = i < j ? i + "_" + j : j + "_" + i;
@@ -306,7 +308,10 @@
       };
 
       // 1) hubs, spaced by best-candidate sampling
-      const nH = Math.max(fill ? 3 : 5, Math.round(w / (fill ? 72 : 78) * this.density));
+      /* A short band (a phone, where the network keeps above the text) gets
+         proportionally fewer hubs, so it reads as an airy strip, not a crowd. */
+      const thin = fill ? 1 : Math.max(.6, Math.min(1, tailMax / 240));
+      const nH = Math.max(3, Math.round(w / (fill ? 72 : 78) * this.density * thin));
       const hubs = [];
       for (let k = 0; k < nH; k++) {
         let best = null, bd = -1;
@@ -319,7 +324,7 @@
         }
         const big = Math.pow(rnd(), 1.6);
         const kind = rnd() < .26 ? "target" : "dot", c = pick();
-        if (best) hubs.push(add(best[0], best[1], 5.5 + big * 15, kind, c));
+        if (best) hubs.push(add(best[0], best[1], 4.5 + big * 10.5, kind, c));
       }
       // 2) spokes out to satellites; some satellites branch again
       const sats = [];
@@ -327,7 +332,7 @@
         const hi = hubs[q], hn = nodes[hi], m = 4 + Math.floor(rnd() * 6);
         for (let k = 0; k < m; k++) {
           const kr = rnd(), kind = kr < .07 ? "target" : kr < .12 ? "open" : "dot";
-          const r = 1.8 + Math.pow(rnd(), 2.2) * 6, c = pick();
+          const r = 1.6 + Math.pow(rnd(), 2.2) * 4.8, c = pick();
           const si = place(() => {
             const ang = Math.PI / 2 + (rnd() - .5) * Math.PI * 1.7;
             const dist = (24 + Math.pow(rnd(), 1.5) * 135) * u;
@@ -337,7 +342,7 @@
           sats.push(si); link(hi, si, "spoke");
           if (rnd() < .2) {
             const sn = nodes[si];
-            sn.r = Math.max(sn.r, (3.5 + rnd() * 3.5) * u);
+            sn.r = Math.max(sn.r, (3 + rnd() * 2.8) * u);
             const mm = 2 + Math.floor(rnd() * 3);
             for (let z = 0; z < mm; z++) {
               const ci = place(() => {
@@ -387,7 +392,7 @@
           for (let z = 0; z < Math.min(m, near.length); z++) link(src, near[z][1], "ray");
         }
         // 6) a faint scatter below the band, loosely tied in
-        const nTail = Math.round(w / 55 * this.density * (fill ? .5 : 1));
+        const nTail = Math.round(w / 55 * this.density * (fill ? .5 : thin));
         for (let k = 0; k < nTail; k++) {
           const kr = rnd(), kind = kr < .1 ? "open" : kr < .17 ? "target" : "dot";
           const ti = place(() => [xAt(), BH * .75 + Math.pow(rnd(), 1.1) * (tailMax - BH * .75)], 1.6 + Math.pow(rnd(), 2) * 5.5, kind, pick());

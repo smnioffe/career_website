@@ -73,7 +73,14 @@ live archived copy at `legacy.html`. See "Rollback" below.
   can carry a dot), places no dot on it, and drops any line that would cross
   it. Column fills build only in the space under their text. When a line of
   text runs across the middle of a top field (phones, tablets), the network
-  keeps to the strip above the text. Fields rebuild when web fonts load.
+  keeps to the strip above the text, spread across the full width (the hero
+  drops its top-right fade at ≤820px for this). To give that strip room,
+  `.hero-inner` (≤820px) and `.contact-inner` (≤600px) get 150px of top
+  padding; their padding lives in `redesign.css`, not inline, for the reason
+  in section 3. Fields rebuild when web fonts load.
+- Keep it quiet. Simon found the first version of this design too loud; it
+  was toned down to hubs of at most ~15px radius, lighter lines, and canvas
+  opacities of .46 (hero), .6 (column fills) and .5 (Contact).
 - The layout comes from a seeded sequence (`data-net-seed`). The order of the
   random draws in `build()` is load-bearing: change it and the graphic changes
   on every canvas.
