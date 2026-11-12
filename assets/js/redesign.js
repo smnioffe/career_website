@@ -77,6 +77,13 @@
        drift is scaled by driftAmp, which is 1 at rest and widens a little
        while the page scrolls. */
     let driftAmp = 1;
+    /* On a phone the network sits right beside the text, so the sweep's warm
+       glow is toned down there (glowK) along with its swell (swellK). */
+    const phone = window.matchMedia("(max-width:600px)");
+    let glowK = 1, swellK = 1;
+    const setPhone = () => { glowK = phone.matches ? .4 : 1; swellK = phone.matches ? .6 : 1; };
+    setPhone();
+    if (phone.addEventListener) phone.addEventListener("change", setPhone);
     const sweep = {
       init(S) {
         const angle = Math.PI * -0.25;
@@ -108,12 +115,12 @@
           if (dist < st.bandWidth) influence = 0.5 * (1 + Math.cos(Math.PI * dist / st.bandWidth));
           const driftX = Math.sin(t * 0.3 + n.p[1] * Math.PI * 2) * 8 * driftAmp;
           const driftY = Math.cos(t * 0.4 + n.p[2] * Math.PI * 2) * 8 * driftAmp;
-          const shift = influence * 18;
+          const shift = influence * 18 * swellK;
           n.x = n.hx + driftX - st.ny * shift;
           n.y = n.hy + driftY + st.nx * shift;
-          n.glow = influence * 0.6;
-          n.scale = 1 + influence * 0.3;
-          n.am = 1 + influence * 0.5;
+          n.glow = influence * 0.6 * glowK;
+          n.scale = 1 + influence * 0.3 * swellK;
+          n.am = 1 + influence * 0.5 * swellK;
         }
         for (let i = 0; i < S.links.length; i++) {
           const link = S.links[i];
@@ -694,7 +701,11 @@
     }
     document.addEventListener("visibilitychange", sync);
     if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", () => { sync(); if (!running) fields.forEach((f) => { f.build(); f.render(); }); });
-    T = sweepStart(fields.find((f) => f.cv.classList.contains("net-hero")));
+    /* On a phone the page opens without the glow: the clock starts a few
+       seconds before the band's pass (a negative time puts the band outside
+       every field), so it fades in gently later. On a larger screen it starts
+       just before the band reaches the hero's visible corner. */
+    T = phone.matches ? -5 : sweepStart(fields.find((f) => f.cv.classList.contains("net-hero")));
     sync();
   }
 

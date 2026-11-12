@@ -107,6 +107,10 @@ live archived copy at `legacy.html`. See "Rollback" below.
   before the band reaches the visible top-right of the hero, so the sweep is
   the first thing a visitor sees. Started from zero, the band spends its first
   ~11 seconds under the hero's mask and the page appears to show only drift.
+  Phones (≤600px) are the exception, at Simon's request: there the network
+  sits beside the text and the glow read as too prominent on arrival, so the
+  clock starts at -5 (no glow for the first ~4s, then it fades in) and the
+  glow is 40% strength (`glowK = .4`) with a gentler swell (`swellK = .6`).
 - Fields marked `data-net-repel` (the hero and the Contact field) push dots
   softly away from a mouse or pen pointer: up to `REPEL_PUSH = 19`px within
   `REPEL_R = 140`px, easing back when it moves on. Simon had it toned down
