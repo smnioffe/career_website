@@ -22,7 +22,7 @@
     if (!canvases.length) return;
 
     const SPEED = 1.25;        // resting time scale
-    const SCROLL_SPEED = 3;    // time scale at FAST_SCROLL and above
+    const SCROLL_SPEED = 4.5;  // time scale at FAST_SCROLL and above
     const DRIFT_LIFT = .3;     // extra drift width at a fast scroll (+30%)
     /* How the lift follows the scroll. The page's speed is first averaged
        over about AVG seconds, since a mouse wheel moves it in steps with
