@@ -72,12 +72,14 @@ live archived copy at `legacy.html`. See "Rollback" below.
   the field's section or column (padded by 22px, about as far as the motion
   can carry a dot), places no dot on it, and drops any line that would cross
   it. Column fills build only in the space under their text. When a line of
-  text runs across the middle of a top field (phones, tablets), the network
-  keeps to the strip above the text, spread across the full width (the hero
-  drops its top-right fade at ≤820px for this). To give that strip room,
-  `.hero-inner` (≤820px) and `.contact-inner` (≤600px) get 150px of top
-  padding; their padding lives in `redesign.css`, not inline, for the reason
-  in section 3. Fields rebuild when web fonts load.
+  text runs across the middle of a top field (phones), the network spreads
+  over the full width and down through the gaps beside the text, with fewer
+  long lines -- Simon found a strip along the top alone "too compact". For
+  this the hero drops its top-right fade at ≤600px, Contact's canvas
+  (`.net-contact`) is 600px tall at ≤600px, and `.hero-inner` (≤820px) and
+  `.contact-inner` (≤600px) get 150px of top padding. That padding and
+  Contact's canvas box live in `redesign.css`, not inline, for the reason in
+  section 3. Fields rebuild when web fonts load.
 - Keep it quiet. Simon found the first version of this design too loud; it
   was toned down to hubs of at most ~15px radius, lighter lines, and canvas
   opacities of .46 (hero), .6 (column fills) and .5 (Contact).

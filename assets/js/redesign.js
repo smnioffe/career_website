@@ -200,10 +200,10 @@
          field's section or column, padded by M -- about as far as the motion
          (drift, sweep and cursor push together) can carry a dot. No dot is
          placed on these and no line crosses them. When a line of text runs
-         across the middle of a top field (a phone), the network keeps to the
-         strip above the text instead of weaving between its lines. */
+         across the middle of a top field (a phone), the network spreads over
+         the full width and down through the gaps beside the text. */
       const keep = [], M = 22, box = cv.getBoundingClientRect();
-      let textTop = h, firstText = h, wide = false;
+      let wide = false;
       const scope = fill ? cv.parentElement : this.section;
       if (scope && document.createRange && window.NodeFilter) {
         const walk = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT), range = document.createRange();
@@ -218,15 +218,15 @@
             if (k[2] < 0 || k[3] < 0 || k[0] > w || k[1] > h) continue;
             /* Column fills are built upside down and flipped at the end. */
             keep.push(fill ? [k[0], h - k[3], k[2], h - k[1]] : k);
-            firstText = Math.min(firstText, k[1]);
             if (k[0] < w * .4 && k[2] > w * .6) wide = true;   // a line across the middle
           }
         }
       }
-      /* Above the text, the band runs the full width, like a banner. */
-      if (!fill && wide) { textTop = firstText; right = false; }
-      const tailCap = fill ? free - 8 : Math.min(h * .66, textTop);
-      const BH = fill ? free * .6 : Math.min(h * this.band, tailCap * .7);   // depth of the dense band
+      if (!fill && wide) right = false;
+      const tailCap = fill ? free - 8 : h * (wide ? .8 : .66);
+      /* On a narrow screen the band reaches further down, through the gaps
+         beside the text, so the network is not all piled along the top. */
+      const BH = fill ? free * .6 : wide ? tailCap * .78 : Math.min(h * this.band, tailCap * .7);
       const tailMax = fill ? tailCap : Math.min(BH * 1.95, tailCap);
       const onText = (x, y, r) => {
         for (let i = 0; i < keep.length; i++) {
@@ -301,6 +301,8 @@
         seen[key] = 1;
         const p = nodes[i], q = nodes[j], len = Math.hypot(p.hx - q.hx, p.hy - q.hy);
         if (keep.length && crossesText(p.hx, p.hy, q.hx, q.hy)) return;
+        /* Weaving round text on a phone, a long line reads as a stray. */
+        if (wide && len > 200 * u) return;
         const fall = type === "ray" ? 1 : Math.max(.45, 1 - len / (420 * u));
         /* A few spokes from blue and orange hubs take their hub's colour. */
         const tint = type === "spoke" && (p.c === colors[3][0] || p.c === colors[4][0]) && (i * 7 + j) % 5 === 0 ? this.pal.rgb[p.c] : null;
@@ -311,7 +313,7 @@
       /* A short band (a phone, where the network keeps above the text) gets
          proportionally fewer hubs, so it reads as an airy strip, not a crowd. */
       const thin = fill ? 1 : Math.max(.6, Math.min(1, tailMax / 240));
-      const nH = Math.max(3, Math.round(w / (fill ? 72 : 78) * this.density * thin));
+      const nH = Math.max(3, Math.round(w / (fill ? 72 : 78) * this.density * (wide ? BH / 260 : thin)));
       const hubs = [];
       for (let k = 0; k < nH; k++) {
         let best = null, bd = -1;

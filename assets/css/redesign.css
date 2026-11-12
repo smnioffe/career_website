@@ -202,13 +202,19 @@ section[id],header[id]{scroll-margin-top:78px}
    right, where the portrait is, and clears out of the headline and chips. */
 .net-hero{position:fixed;top:var(--nav-h);left:0;width:100%;height:calc(100vh - var(--nav-h));height:calc(100lvh - var(--nav-h));opacity:.46;pointer-events:none;-webkit-mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%);mask-image:radial-gradient(115% 92% at 100% 0%,#000 0%,#000 26%,rgba(0,0,0,.35) 58%,transparent 82%)}
 /* The hero's and Contact's padding live here, not inline, so phones can give
-   the network above the text more room: there the text runs edge to edge and
-   the network keeps to the band above it, full width -- so the hero drops its
-   corner fade (this follows .net-hero so it wins). */
+   the network more room above the text. On narrow screens the hero network
+   spreads across the full width and around the text, so it drops its
+   top-right corner fade (this follows .net-hero so it wins). */
 .hero-inner{padding:96px 32px 88px}
 .contact-inner{padding:96px 32px 72px}
-@media (max-width:820px){.hero-inner{padding-top:150px}.net-hero{-webkit-mask-image:none;mask-image:none}}
+@media (max-width:820px){.hero-inner{padding-top:150px}}
+@media (max-width:600px){.net-hero{-webkit-mask-image:none;mask-image:none}}
 @media (max-width:600px){.contact-inner{padding-top:150px}}
+/* Contact's network. Its box is here, not inline, so phones can make it
+   taller: there it reaches down beside the heading and email, not just
+   across the top. */
+.net-contact{position:absolute;top:0;left:0;width:100%;height:clamp(300px,34vw,430px);opacity:.5;pointer-events:none}
+@media (max-width:600px){.net-contact{height:600px}}
 /* The fills are a background layer for their whole column, not a block tacked
    on below the text. They pass behind the copy at low weight and come up to
    full strength in the open space underneath it. */
