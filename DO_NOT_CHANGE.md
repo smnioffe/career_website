@@ -58,20 +58,37 @@ live archived copy at `legacy.html`. See "Rollback" below.
 - Every `canvas[data-net]` is drawn and animated by `initNetworks()` in
   `assets/js/redesign.js`. There is one renderer; do not add a second "static"
   one beside it, or the two will drift.
+- The design (2026-11-12, at Simon's request, modelled on a reference banner
+  he supplied) is a structured hub-and-spoke network, not a mesh: evenly
+  spaced large hubs fan straight spokes to smaller dots, some of which branch
+  again; hubs join their nearest hubs with darker lines; target rings (ring +
+  core) and open rings are mixed in. The palette is ink, warm greys and a
+  slightly brighter orange `#c65d2a`, blue `#336ea9` and green `#68834a` (a
+  lifted set on Contact's near-black). The hero and Contact hang from the top
+  edge, with rays entering from above the frame and a faint scatter below;
+  the About and Résumé column fills are built the same way, flipped, and rise
+  from the bottom of their column.
+- Every field keeps clear of text. `build()` measures each line of text in
+  the field's section or column (padded by 22px, about as far as the motion
+  can carry a dot), places no dot on it, and drops any line that would cross
+  it. Column fills build only in the space under their text. When a line of
+  text runs across the middle of a top field (phones, tablets), the network
+  keeps to the strip above the text. Fields rebuild when web fonts load.
 - The layout comes from a seeded sequence (`data-net-seed`). The order of the
   random draws in `build()` is load-bearing: change it and the graphic changes
-  on every canvas. At rest, the About, Résumé and Contact fields are
-  pixel-identical to the pre-motion site — keep it that way.
+  on every canvas.
 - The motion is the diagonal sweep at `SPEED = 1.25`. Scrolling lifts it in
   proportion to how fast the page moves: up to `SCROLL_SPEED = 4.5` at
   `FAST_SCROLL = 1800`px/s (raised from 3 at Simon's request), on a curve
   that gives a gentle scroll a visible part of it (about 2.2 at 300px/s,
   3.25 at 900px/s), plus a slightly wider
-  drift (`DRIFT_LIFT = .3`, so +30% at most). When the scroll stops, both ease
-  back over about a second (`SETTLE = .38`s) instead of snapping. Simon asked
-  for this in place of the earlier fixed 2.25 with a snap-back, which he
-  could not notice; keep it subtle, and do not retune it without being asked.
-  At rest the drift factor is exactly 1, so resting frames are unchanged.
+  drift (`DRIFT_LIFT = .3`, so +30% at most). The lift starts on the first
+  frame the page moves -- the page speed is only lightly smoothed (`JITTER`,
+  0.03s) and the lift jumps straight up to it; an earlier version averaged
+  first and Simon read it as a delayed start. When the scroll stops it
+  coasts back over about a second (`SETTLE = .4`s) instead of snapping. Do
+  not retune any of this without being asked. At rest the drift factor is
+  exactly 1.
 - The animation clock does not start at zero. `sweepStart()` starts it just
   before the band reaches the visible top-right of the hero, so the sweep is
   the first thing a visitor sees. Started from zero, the band spends its first
