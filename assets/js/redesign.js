@@ -13,24 +13,29 @@
      (see `sweep` below). With motion off — prefers-reduced-motion — every
      field is drawn once at rest, which is the original static graphic.
 
-     Time is the only thing the loop scales. SPEED is the resting pace and
-     SCROLL_SPEED the pace while the page is scrolling: the networks switch
-     up as soon as it moves and drop straight back when it stops. */
+     Scrolling lifts the networks: the faster the page moves, the faster the
+     animation clock runs (SPEED at rest, up to SCROLL_SPEED for a fast
+     scroll) and the slightly wider each dot's drift. When the scroll stops,
+     both ease back to rest over about a second rather than snapping. */
   function initNetworks() {
     const canvases = Array.prototype.slice.call(document.querySelectorAll("canvas[data-net]"));
     if (!canvases.length) return;
 
     const SPEED = 1.25;        // resting time scale
-    const SCROLL_SPEED = 2.25; // time scale while the page is scrolling
-    /* How "scrolling" is judged. Mouse wheels and some trackpads move the page
-       in steps with short pauses between them, so a scroll counts as ongoing
-       until the page has been still for HOLD seconds -- otherwise the speed
-       would flicker down between steps. The switch itself eases over a few
-       hundredths of a second each way: fast enough to read as immediate, but
-       not a one-frame jump in speed, which shows as a jolt. */
-    const HOLD = .12;          // s of stillness before a scroll counts as over
-    const EASE_UP = .035;      // s, time constant switching up
-    const EASE_DOWN = .06;     // s, time constant switching back
+    const SCROLL_SPEED = 3;    // time scale at FAST_SCROLL and above
+    const DRIFT_LIFT = .3;     // extra drift width at a fast scroll (+30%)
+    /* How the lift follows the scroll. The page's speed is first averaged
+       over about AVG seconds, since a mouse wheel moves it in steps with
+       pauses between them, then followed quickly upward and slowly downward,
+       so when the scroll stops the networks slow down over about a second
+       rather than at once. That speed maps to a 0..1 lift on a curve that
+       rises quickly at first: a gentle scroll gets a noticeable part of the
+       lift, a fast one all of it. */
+    const FAST_SCROLL = 1800;  // px/s of page movement that gives the full lift
+    const LIFT_CURVE = .7;     // <1 favours gentle scrolls
+    const AVG = .12;           // s, averaging window for the page's speed
+    const RISE = .06;          // s, time constant speeding up
+    const SETTLE = .38;        // s, time constant easing back after a scroll
     const CYCLE = 25;          // seconds of animation time per sweep pass
     /* The cursor nudge, on fields marked data-net-repel. Dots within REPEL_R
        of a mouse or pen pointer drift away from it, by up to REPEL_PUSH at the
@@ -59,7 +64,10 @@
        its influence is zero at the wrap and the loop has no seam.
 
        The sweep was written by Gemini CLI against this engine's contract and
-       chosen from seven candidates; its maths is unchanged. */
+       chosen from seven candidates; its maths is unchanged, except that the
+       drift is scaled by driftAmp, which is 1 at rest and widens a little
+       while the page scrolls. */
+    let driftAmp = 1;
     const sweep = {
       init(S) {
         const angle = Math.PI * -0.25;
@@ -89,8 +97,8 @@
           const dist = Math.abs(st.nd[i].proj - currentProj);
           let influence = 0;
           if (dist < st.bandWidth) influence = 0.5 * (1 + Math.cos(Math.PI * dist / st.bandWidth));
-          const driftX = Math.sin(t * 0.3 + n.p[1] * Math.PI * 2) * 8;
-          const driftY = Math.cos(t * 0.4 + n.p[2] * Math.PI * 2) * 8;
+          const driftX = Math.sin(t * 0.3 + n.p[1] * Math.PI * 2) * 8 * driftAmp;
+          const driftY = Math.cos(t * 0.4 + n.p[2] * Math.PI * 2) * 8 * driftAmp;
           const shift = influence * 18;
           n.x = n.hx + driftX - st.ny * shift;
           n.y = n.hy + driftY + st.nx * shift;
@@ -331,24 +339,24 @@
     window.addEventListener("blur", () => { pointer.on = false; });
 
     const fields = canvases.map((cv) => new Field(cv));
-    let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0, lastMove = -1e9;
+    let running = false, raf = 0, last = 0, T = 0, avg = 0, vel = 0, lastY = 0;
 
     function frame(now) {
       raf = 0;
       if (!running) return;
       const raw = Math.min(.05, Math.max(0, (now - last) / 1000));
       last = now;
-      /* Any movement of the page counts, whatever its speed: a gentle scroll
-         gets the same lift as a fast one. boost runs 0..1 between the two
-         paces. */
+      /* The page's speed this frame, capped so a jump to an anchor reads as
+         a fast scroll rather than an enormous one, averaged, then followed. */
       const y = window.scrollY || 0;
-      if (Math.abs(y - lastY) >= .5) lastMove = now;
+      const v = raw > 0 ? Math.min(6000, Math.abs(y - lastY) / raw) : 0;
       lastY = y;
-      const target = (now - lastMove) / 1000 < HOLD ? 1 : 0;
-      boost += (target - boost) * (1 - Math.exp(-raw / (target > boost ? EASE_UP : EASE_DOWN)));
-      if (boost < .002) boost = 0;
-      if (boost > .998) boost = 1;
-      T += raw * (SPEED + (SCROLL_SPEED - SPEED) * boost);
+      avg += (v - avg) * (1 - Math.exp(-raw / AVG));
+      vel += (avg - vel) * (1 - Math.exp(-raw / (avg > vel ? RISE : SETTLE)));
+      if (vel < 2) vel = 0;
+      const lift = Math.pow(Math.min(1, vel / FAST_SCROLL), LIFT_CURVE);
+      driftAmp = 1 + DRIFT_LIFT * lift;
+      T += raw * (SPEED + (SCROLL_SPEED - SPEED) * lift);
       for (let i = 0; i < fields.length; i++) {
         const f = fields[i];
         if (f.visible && f.S.w) f.step(T, raw);
@@ -363,7 +371,7 @@
       if (want && !running) {
         /* Resuming: forget the scroll that happened meanwhile, or the first
            frame would read it as one enormous flick. */
-        running = true; last = performance.now(); lastY = window.scrollY || 0; boost = 0; lastMove = -1e9;
+        running = true; last = performance.now(); lastY = window.scrollY || 0; avg = 0; vel = 0; driftAmp = 1;
         raf = requestAnimationFrame(frame);
       } else if (!want && running) {
         running = false;

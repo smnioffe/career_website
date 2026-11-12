@@ -62,10 +62,15 @@ live archived copy at `legacy.html`. See "Rollback" below.
   random draws in `build()` is load-bearing: change it and the graphic changes
   on every canvas. At rest, the About, Résumé and Contact fields are
   pixel-identical to the pre-motion site — keep it that way.
-- The motion is the diagonal sweep at `SPEED = 1.25`. While the page is
-  scrolling it runs at `SCROLL_SPEED = 2.25` -- any scroll, regardless of how
-  fast -- and drops back within about 0.3s of the scroll stopping. Simon set
-  both numbers and the snap-back; do not retune them without being asked.
+- The motion is the diagonal sweep at `SPEED = 1.25`. Scrolling lifts it in
+  proportion to how fast the page moves: up to `SCROLL_SPEED = 3` at
+  `FAST_SCROLL = 1800`px/s, on a curve that gives a gentle scroll a visible
+  part of it (about 1.75 at 300px/s, 2.3 at 900px/s), plus a slightly wider
+  drift (`DRIFT_LIFT = .3`, so +30% at most). When the scroll stops, both ease
+  back over about a second (`SETTLE = .38`s) instead of snapping. Simon asked
+  for this in place of the earlier fixed 2.25 with a snap-back, which he
+  could not notice; keep it subtle, and do not retune it without being asked.
+  At rest the drift factor is exactly 1, so resting frames are unchanged.
 - The animation clock does not start at zero. `sweepStart()` starts it just
   before the band reaches the visible top-right of the hero, so the sweep is
   the first thing a visitor sees. Started from zero, the band spends its first
