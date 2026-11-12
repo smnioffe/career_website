@@ -601,20 +601,27 @@
        Visibility is weighted by each dot's own alpha, which already encodes the
        top-right falloff, squared to track the mask's steeper fade. */
     function sweepStart(hero) {
-      const LEAD = 2.5;
+      const LEAD = 2;
       if (!hero || !hero.S.w) return 0;
       const S = hero.S, st = S.store, bw = st.bandWidth;
-      let best = st.minProj, bestScore = -1;
-      for (let k = 0; k <= 200; k++) {
-        const P = st.minProj + st.range * k / 200;
+      const scoreAt = (P) => {
         let score = 0;
         for (let i = 0; i < S.nodes.length; i++) {
           const d = Math.abs(st.nd[i].proj - P);
           if (d < bw) score += S.nodes[i].a * S.nodes[i].a * .5 * (1 + Math.cos(Math.PI * d / bw));
         }
-        if (score > bestScore) { bestScore = score; best = P; }
+        return score;
+      };
+      let k = 0, bestK = 0, bestScore = -1;
+      for (k = 0; k <= 200; k++) {
+        const score = scoreAt(st.minProj + st.range * k / 200);
+        if (score > bestScore) { bestScore = score; bestK = k; }
       }
-      const t = CYCLE * (best - st.minProj) / st.range - LEAD * SPEED;
+      /* Simon would rather the page open with no glow, so back off from that
+         peak to where the band first lights anything visible, and start LEAD
+         seconds short of it: a moment of plain drift, then the sweep arrives. */
+      for (k = bestK; k > 0 && scoreAt(st.minProj + st.range * k / 200) > bestScore * .02; k--);
+      const t = CYCLE * k / 200 - LEAD * SPEED;
       return ((t % CYCLE) + CYCLE) % CYCLE;
     }
 
@@ -701,10 +708,10 @@
     }
     document.addEventListener("visibilitychange", sync);
     if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", () => { sync(); if (!running) fields.forEach((f) => { f.build(); f.render(); }); });
-    /* On a phone the page opens without the glow: the clock starts a few
+    /* The page opens without the glow. On a phone the clock starts a few
        seconds before the band's pass (a negative time puts the band outside
        every field), so it fades in gently later. On a larger screen it starts
-       just before the band reaches the hero's visible corner. */
+       a couple of seconds before the band reaches the hero's visible corner. */
     T = phone.matches ? -5 : sweepStart(fields.find((f) => f.cv.classList.contains("net-hero")));
     sync();
   }

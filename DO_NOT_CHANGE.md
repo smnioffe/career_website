@@ -54,6 +54,15 @@ live archived copy at `legacy.html`. See "Rollback" below.
 - The flanking arrows are anchored to a fixed offset, not vertically centered.
   Centering re-positions them on every set, since the sets differ in height.
 
+- The 02 Expertise rows (`.xp-row` in `.xp-list`) and 04 Areas of Focus
+  cards (`.focus-card`) have a hover state in `redesign.css`: a warm shade
+  fades in, an accent rule draws under the title, the icon lifts (Expertise
+  also dims the other rows). It is built only from pseudo-elements,
+  transforms and opacity, because the rows' backgrounds and colours are
+  inline (section 3). It applies only to mouse/pen (`hover:hover` and
+  `pointer:fine`), and the pseudo-elements exist only there, so they can't
+  cause phone overflow.
+
 ## 6) Network Graphics and Motion
 - Every `canvas[data-net]` is drawn and animated by `initNetworks()` in
   `assets/js/redesign.js`. There is one renderer; do not add a second "static"
@@ -103,14 +112,16 @@ live archived copy at `legacy.html`. See "Rollback" below.
   coasts back over about a second (`SETTLE = .4`s) instead of snapping. Do
   not retune any of this without being asked. At rest the drift factor is
   exactly 1.
-- The animation clock does not start at zero. `sweepStart()` starts it just
-  before the band reaches the visible top-right of the hero, so the sweep is
-  the first thing a visitor sees. Started from zero, the band spends its first
-  ~11 seconds under the hero's mask and the page appears to show only drift.
-  Phones (≤600px) are the exception, at Simon's request: there the network
-  sits beside the text and the glow read as too prominent on arrival, so the
-  clock starts at -5 (no glow for the first ~4s, then it fades in) and the
-  glow is 40% strength (`glowK = .4`) with a gentler swell (`swellK = .6`).
+- The page opens with NO glow (Simon's request, phones first, then desktop),
+  but the sweep must still arrive within a few seconds. The animation clock
+  does not start at zero: started from zero, the band spends its first ~11
+  seconds under the hero's mask and the page appears to show only drift.
+  `sweepStart()` finds where the band lights the most visible hero dots, backs
+  off to where it first lights any (2% of that peak), and starts `LEAD = 2`s
+  before that, so the glow builds in from about the second second. Phones
+  (≤600px), where the network sits beside the text, start the clock at -5
+  (no glow for ~4s) and keep the glow at 40% strength (`glowK = .4`) with a
+  gentler swell (`swellK = .6`).
 - Fields marked `data-net-repel` (the hero and the Contact field) push dots
   softly away from a mouse or pen pointer: up to `REPEL_PUSH = 19`px within
   `REPEL_R = 140`px, easing back when it moves on. Simon had it toned down
