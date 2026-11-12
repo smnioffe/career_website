@@ -520,40 +520,40 @@
       <div class="pf-panel" data-panel="2" role="tabpanel" aria-label="Data Quality Scorecard" hidden>
         <div class="pf-grid pf-grid-multi">
           <figure class="pf-item">
-            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Clinical Concept Counts — show details">
-              <img src="assets/imgs/dash3.png" alt="Clinical Concept Counts" width="1311" height="804" loading="lazy">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Run Summary — show details">
+              <img src="assets/imgs/dash3.png" alt="Run Summary" width="1311" height="804" loading="lazy">
               <span class="pf-more" aria-hidden="true">+</span>
               <div class="pf-veil">
-                <div class="pf-veil-title">Clinical Concept Counts</div>
-                <p class="pf-veil-body">Interactive healthcare data-quality dashboards built with D3.js, Node.js, Python and AWS S3, for exploring validation results across clinical and claims domains, spotting anomalies and investigating trends. This summary view compares concept counts across clinical measures.</p>
+                <div class="pf-veil-title">Run Summary</div>
+                <p class="pf-veil-body">A data-quality monitor I custom-built: Node.js and Python aggregate millions of rows of raw data from S3 and generate these D3 dashboards on the fly, benchmarked by domain. It profiles the data ahead of the long ETL run, so anomalies surface before processing.</p>
               </div>
             </div>
-            <figcaption class="pf-caption">Clinical Concept Counts</figcaption>
-            <p class="pf-touch-body">Interactive healthcare data-quality dashboards built with D3.js, Node.js, Python and AWS S3, for exploring validation results across clinical and claims domains, spotting anomalies and investigating trends. This summary view compares concept counts across clinical measures.</p>
+            <figcaption class="pf-caption">Run Summary</figcaption>
+            <p class="pf-touch-body">A data-quality monitor I custom-built: Node.js and Python aggregate millions of rows of raw data from S3 and generate these D3 dashboards on the fly, benchmarked by domain. It profiles the data ahead of the long ETL run, so anomalies surface before processing.</p>
           </figure>
           <figure class="pf-item">
-            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Claims Cost by Plan — show details">
-              <img src="assets/imgs/dash4.png" alt="Claims Cost by Plan" width="1219" height="805" loading="lazy">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Claims Check — show details">
+              <img src="assets/imgs/dash4.png" alt="Claims Check" width="1219" height="805" loading="lazy">
               <span class="pf-more" aria-hidden="true">+</span>
               <div class="pf-veil">
-                <div class="pf-veil-title">Claims Cost by Plan</div>
-                <p class="pf-veil-body">The claims view: monthly cost for the top five health plans, which makes missing or unexpected months in a claims feed stand out.</p>
+                <div class="pf-veil-title">Claims Check</div>
+                <p class="pf-veil-body">The same raw-data view for claims. A plan's totals falling off or drifting from the benchmark signal a mapping or transformation issue.</p>
               </div>
             </div>
-            <figcaption class="pf-caption">Claims Cost by Plan</figcaption>
-            <p class="pf-touch-body">The claims view: monthly cost for the top five health plans, which makes missing or unexpected months in a claims feed stand out.</p>
+            <figcaption class="pf-caption">Claims Check</figcaption>
+            <p class="pf-touch-body">The same raw-data view for claims. A plan's totals falling off or drifting from the benchmark signal a mapping or transformation issue.</p>
           </figure>
           <figure class="pf-item">
-            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Immunization Trends — show details">
-              <img src="assets/imgs/dash5.png" alt="Immunization Trends" width="1074" height="833" loading="lazy">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Immunization Check — show details">
+              <img src="assets/imgs/dash5.png" alt="Immunization Check" width="1074" height="833" loading="lazy">
               <span class="pf-more" aria-hidden="true">+</span>
               <div class="pf-veil">
-                <div class="pf-veil-title">Immunization Trends</div>
-                <p class="pf-veil-body">The immunization view: unscrubbed term counts beside a date trend of completed immunizations, for catching unmapped terms and gaps in the feed.</p>
+                <div class="pf-veil-title">Immunization Check</div>
+                <p class="pf-veil-body">The immunization view of that raw data. Counts dropping off or terms that don't match the benchmark point to a coding or mapping issue before the batch run.</p>
               </div>
             </div>
-            <figcaption class="pf-caption">Immunization Trends</figcaption>
-            <p class="pf-touch-body">The immunization view: unscrubbed term counts beside a date trend of completed immunizations, for catching unmapped terms and gaps in the feed.</p>
+            <figcaption class="pf-caption">Immunization Check</figcaption>
+            <p class="pf-touch-body">The immunization view of that raw data. Counts dropping off or terms that don't match the benchmark point to a coding or mapping issue before the batch run.</p>
           </figure>
         </div>
       </div>
