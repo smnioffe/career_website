@@ -235,10 +235,14 @@
         }
         return false;
       };
-      /* Whether the segment p-q passes through any kept-clear box (slab test). */
+      /* Whether the segment p-q passes through any kept-clear box (slab test).
+         A hairline needs less room than a dot, so lines are tested against
+         the text padded by LM rather than M -- that leaves the narrow gap
+         beside a long line of text open for a line to pass through. */
+      const LM = 8;
       const crossesText = (px, py, qx, qy) => {
         for (let i = 0; i < keep.length; i++) {
-          const k = keep[i];
+          const k0 = keep[i], s = M - LM, k = [k0[0] + s, k0[1] + s, k0[2] - s, k0[3] - s];
           let t0 = 0, t1 = 1;
           const dx = qx - px, dy = qy - py;
           const edges = [[-dx, px - k[0]], [dx, k[2] - px], [-dy, py - k[1]], [dy, k[3] - py]];
@@ -288,12 +292,13 @@
           /* A spot past the band's edge (or a column's) is skipped, not pushed
              onto the edge -- pushing lines dots up in a row along it. */
           if (xy[1] > tailMax || (fill && (xy[0] < pad || xy[0] > w - pad || xy[1] < pad * 1.5))) continue;
+          if (wide && (xy[0] < 10 || xy[0] > w - 10)) continue;   // no half-dots at a phone's edges
           const x = clampX(xy[0]), y = clampY(xy[1]), rr = r * u + (kind === "target" ? 3 * u : 0);
           if (!onText(x, y, rr) && clear(x, y, rr)) return add(x, y, r, kind, c);
         }
         return -1;
       };
-      const STR = { spine: .5, ray: .27, spoke: .38, bridge: .2 };
+      const STR = { spine: .5, ray: .27, spoke: .38, bridge: .2, join: .34 };
       const link = (i, j, type) => {
         if (i < 0 || j < 0 || i === j) return;
         const key = i < j ? i + "_" + j : j + "_" + i;
@@ -302,7 +307,7 @@
         const p = nodes[i], q = nodes[j], len = Math.hypot(p.hx - q.hx, p.hy - q.hy);
         if (keep.length && crossesText(p.hx, p.hy, q.hx, q.hy)) return;
         /* Weaving round text on a phone, a long line reads as a stray. */
-        if (wide && len > 200 * u) return;
+        if (wide && type !== "join" && len > 200 * u) return;
         const fall = type === "ray" ? 1 : Math.max(.45, 1 - len / (420 * u));
         /* A few spokes from blue and orange hubs take their hub's colour. */
         const tint = type === "spoke" && (p.c === colors[3][0] || p.c === colors[4][0]) && (i * 7 + j) % 5 === 0 ? this.pal.rgb[p.c] : null;
@@ -319,7 +324,7 @@
         let best = null, bd = -1;
         for (let t = 0; t < 14; t++) {
           const x = clampX(xAt()), y = BH * ((fill ? .16 : -.08) + Math.pow(rnd(), 1.15) * (fill ? .84 : 1));
-          if (onText(x, y, 12 * u)) continue;
+          if (onText(x, y, 12 * u) || (wide && (x < 16 || x > w - 16))) continue;
           let md = 1e9;
           for (let q = 0; q < hubs.length; q++) md = Math.min(md, Math.hypot((nodes[hubs[q]].hx - x) * .8, nodes[hubs[q]].hy - y));
           if (md > bd) { bd = md; best = [x, y]; }
@@ -407,6 +412,73 @@
             if (d < bd && d > 12 * u) { bd = d; best = j; }
           }
           link(best, ti, "spoke");
+        }
+      }
+      if (wide) {
+        /* 7) On a phone, keeping lines off the text cuts the network into
+           islands. Rejoin them: repeatedly link the group nearest the main
+           network to it, through a gap -- never across text -- and drop any
+           group that cannot be reached, so what shows is one network. */
+        const parent = nodes.map((n, i) => i);
+        const find = (i) => { while (parent[i] !== i) i = parent[i] = parent[parent[i]]; return i; };
+        const shown = (i) => nodes[i].kind !== "hidden";
+        links.forEach((L) => { if (shown(L.a) && shown(L.b)) parent[find(L.a)] = find(L.b); });
+        const groups = () => {
+          const g = {};
+          nodes.forEach((n, i) => { if (shown(i)) (g[find(i)] = g[find(i)] || []).push(i); });
+          return Object.keys(g).map((k) => g[k]).sort((a, b) => b.length - a.length);
+        };
+        for (let pass = 0; pass < 60; pass++) {
+          const gs = groups();
+          if (gs.length < 2) break;
+          const main = gs[0];
+          let best = null;
+          for (let q = 1; q < gs.length; q++) {
+            for (const i of gs[q]) for (const m of main) {
+              const d = Math.hypot(nodes[i].hx - nodes[m].hx, nodes[i].hy - nodes[m].hy);
+              if (d > 340 * u || (best && d >= best[0])) continue;
+              if (crossesText(nodes[i].hx, nodes[i].hy, nodes[m].hx, nodes[m].hy)) continue;
+              best = [d, i, m];
+            }
+          }
+          if (!best) {
+            /* No straight line gets there without crossing text: route it
+               through one new dot in a gap instead (two segments, round the
+               end of a line of text). */
+            const reach = (set, x, y) => {
+              let bd = 340 * u, bi = -1;
+              for (const i of set) {
+                const d = Math.hypot(nodes[i].hx - x, nodes[i].hy - y);
+                if (d < bd && d > 8 && !crossesText(x, y, nodes[i].hx, nodes[i].hy)) { bd = d; bi = i; }
+              }
+              return [bd, bi];
+            };
+            let way = null;
+            for (let gx = 14; gx <= w - 14; gx += 18) {
+              for (let gy = 10; gy <= tailMax; gy += 18) {
+                if (onText(gx, gy, 3 * u) || !clear(gx, gy, 2 * u)) continue;
+                const rm = reach(main, gx, gy);
+                if (rm[1] < 0) continue;
+                for (let q = 1; q < gs.length; q++) {
+                  const rq = reach(gs[q], gx, gy);
+                  if (rq[1] >= 0 && (!way || rm[0] + rq[0] < way[0])) way = [rm[0] + rq[0], gx, gy, rm[1], rq[1]];
+                }
+              }
+            }
+            if (!way) break;
+            const wi = add(way[1], way[2], 1.8, "dot", colors[1][0]);
+            link(wi, way[3], "join"); link(wi, way[4], "join");
+            parent.push(wi);
+            parent[find(wi)] = find(way[3]); parent[find(way[4])] = find(way[3]);
+            continue;
+          }
+          link(best[1], best[2], "join");
+          parent[find(best[1])] = find(best[2]);
+        }
+        const gs = groups();
+        for (let q = 1; q < gs.length; q++) gs[q].forEach((i) => { nodes[i].kind = "hidden"; nodes[i].gone = true; });
+        for (let k = links.length - 1; k >= 0; k--) {
+          if (nodes[links[k].a].gone || nodes[links[k].b].gone) links.splice(k, 1);
         }
       }
       if (fill) nodes.forEach((n) => { n.hy = n.y = h - n.hy; });

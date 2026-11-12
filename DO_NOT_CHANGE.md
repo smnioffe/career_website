@@ -74,7 +74,12 @@ live archived copy at `legacy.html`. See "Rollback" below.
   it. Column fills build only in the space under their text. When a line of
   text runs across the middle of a top field (phones), the network spreads
   over the full width and down through the gaps beside the text, with fewer
-  long lines -- Simon found a strip along the top alone "too compact". For
+  long lines -- Simon found a strip along the top alone "too compact". It
+  must read as ONE network, not separate clusters: after the layout, groups
+  cut apart by the text are joined back to the main network through a gap
+  (adding a small routing dot when no straight line clears the text), and any
+  group that still cannot be reached is dropped. Lines clear text by 8px,
+  dots by 22px, and no dot sits half off a phone's edge. For
   this the hero drops its top-right fade at ≤600px, Contact's canvas
   (`.net-contact`) is 600px tall at ≤600px, and `.hero-inner` (≤820px) and
   `.contact-inner` (≤600px) get 150px of top padding. That padding and
