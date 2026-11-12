@@ -795,7 +795,31 @@
     setTimeout(updateTocMotion, 400);
   }
 
+  /* Years of experience, counted from the year in data-years-since: 2012
+     gives 14 in 2026 and 15 from 1 January 2027 (the visitor's local date).
+     data-years-format="word" spells it out, capitalised if the HTML's own
+     fallback text is; otherwise it is a numeral. The fallback text in the
+     HTML is what crawlers and no-JS visitors read, so refresh it now and then. */
+  function initYears() {
+    const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+      "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+    const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+    const words = (n) => n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? "-" + ONES[n % 10] : "");
+    const now = new Date().getFullYear();
+    document.querySelectorAll("[data-years-since]").forEach(function (el) {
+      const n = now - parseInt(el.getAttribute("data-years-since"), 10);
+      if (!(n > 0 && n < 100)) return;
+      if (el.getAttribute("data-years-format") === "word") {
+        const w = words(n), cap = /^[A-Z]/.test(el.textContent);
+        el.textContent = cap ? w.charAt(0).toUpperCase() + w.slice(1) : w;
+      } else {
+        el.textContent = String(n);
+      }
+    });
+  }
+
   function boot() {
+    initYears();
     initResumeToc();
     initPortfolio();
     initNetworks();
