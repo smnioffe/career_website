@@ -107,6 +107,11 @@ live archived copy at `legacy.html`. See "Rollback" below.
   canvas either scrolls away or covers the whole page.
 - The hero canvas's box (position, size, opacity) lives in `redesign.css`, not
   inline on the element, for the reason in section 3.
+- The résumé PDF is always `assets/resume/simon-ioffe-resume.pdf`, and both
+  links to it (nav button, About "Download PDF") carry `?v=` set to the first
+  8 hex characters of the PDF's sha256. Update it whenever the PDF is
+  replaced: the URL is otherwise unchanged, so browsers keep showing the copy
+  they already saved, and the new résumé looks like it never went live.
 - `index.html` loads `redesign.css` and `redesign.js` with a `?v=` stamp.
   Bump it whenever either file changes: browsers otherwise reuse a cached copy
   without asking, and a new page runs against the old script.
