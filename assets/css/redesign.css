@@ -73,6 +73,17 @@ section[id],header[id]{scroll-margin-top:78px}
 .site-nav-spacer{flex:1}
 .site-nav-links{display:flex;align-items:center;gap:2px}
 .site-nav-links .nav-link{font-size:13.5px;color:#6b645b;padding:8px 13px}
+/* Hover underline: an accent rule under the word (inset by the link's side
+   padding, so it spans the text, not the hit area). It draws in left to right
+   over 420ms and snaps back in 90ms the moment the pointer leaves -- the
+   base rule's transition is the exit, the :hover rule's is the entrance. Hover
+   only where a real pointer exists, so a tap on a phone does not leave it on. */
+.site-nav-links .nav-link{position:relative;--ul-x:13px}
+.site-nav-links .nav-link::after{content:"";position:absolute;left:var(--ul-x);right:var(--ul-x);bottom:3px;height:1.5px;border-radius:1px;background:var(--accent,#b35f34);transform:scaleX(0);transform-origin:left center;transition:transform 90ms ease-in;pointer-events:none}
+@media (hover:hover){
+  .site-nav-links .nav-link:hover::after{transform:scaleX(1);transition:transform 420ms cubic-bezier(.4,0,.2,1)}
+}
+.site-nav-links .nav-link:focus-visible::after{transform:scaleX(1)}
 .site-nav-cta{margin-left:12px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:9px 15px;border:1px solid #1c1a17;border-radius:999px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none}
 .site-nav-cta i{font-size:12px}
 @media (max-width:820px){
@@ -80,7 +91,7 @@ section[id],header[id]{scroll-margin-top:78px}
   .site-nav-spacer{display:none}
   .site-nav-cta{margin-left:auto}
   .site-nav-links{order:3;width:100%;justify-content:space-between;gap:0;border-top:1px solid rgba(28,26,23,.08);padding-top:7px}
-  .site-nav-links .nav-link{font-size:12.5px;padding:5px 2px}
+  .site-nav-links .nav-link{font-size:12.5px;padding:5px 2px;--ul-x:2px}
 }
 @media (max-width:360px){
   .site-nav-cta span,.site-nav-brand span{font-size:10.5px}

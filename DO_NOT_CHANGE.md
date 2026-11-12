@@ -70,6 +70,12 @@ live archived copy at `legacy.html`. See "Rollback" below.
   before the band reaches the visible top-right of the hero, so the sweep is
   the first thing a visitor sees. Started from zero, the band spends its first
   ~11 seconds under the hero's mask and the page appears to show only drift.
+- Fields marked `data-net-repel` (the hero and the Contact field) push dots
+  softly away from a mouse or pen pointer: up to `REPEL_PUSH = 19`px within
+  `REPEL_R = 140`px, easing back when it moves on. Simon had it toned down
+  from 22/150 to this; keep it subtle. Touch is ignored on
+  purpose -- a finger is scrolling. It runs on real time, so scrolling does
+  not speed it up, and it does not touch the seeded layout.
 - Visitors with `prefers-reduced-motion` get the resting frame and no loop.
   Fields animate only while their section is on screen and the tab is visible.
 - The hero network is pinned: `.net-hero` is `position:fixed` and `#home`
@@ -78,6 +84,9 @@ live archived copy at `legacy.html`. See "Rollback" below.
   canvas either scrolls away or covers the whole page.
 - The hero canvas's box (position, size, opacity) lives in `redesign.css`, not
   inline on the element, for the reason in section 3.
+- `index.html` loads `redesign.css` and `redesign.js` with a `?v=` stamp.
+  Bump it whenever either file changes: browsers otherwise reuse a cached copy
+  without asking, and a new page runs against the old script.
 
 ## 7) Rollback
 The previous site is recoverable in one command:

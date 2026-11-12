@@ -32,6 +32,14 @@
     const EASE_UP = .035;      // s, time constant switching up
     const EASE_DOWN = .06;     // s, time constant switching back
     const CYCLE = 25;          // seconds of animation time per sweep pass
+    /* The cursor nudge, on fields marked data-net-repel. Dots within REPEL_R
+       of a mouse or pen pointer drift away from it, by up to REPEL_PUSH at the
+       centre and nothing at the rim, and settle home once it moves on. It runs
+       on real time, not the animation clock, so scrolling does not quicken it. */
+    const REPEL_R = 140;       // px, reach of the cursor's influence
+    const REPEL_PUSH = 19;     // px, largest displacement, right under it
+    const REPEL_IN = .14;      // s, time constant moving away
+    const REPEL_OUT = .5;      // s, time constant settling back
 
     const PAL = {
       light: { nodes: [["#1c1a17", .42], ["#a09789", .2], ["#b35f34", .14], ["#4a6fa5", .13], ["#6b7f4f", .11]], ink: [28, 26, 23], accent: [179, 95, 52] },
@@ -118,6 +126,7 @@
          shorter link reach, and k scales displacement to match, so a 300px
          column does not get a 1440px hero's amplitude. */
       this.k = Math.max(.5, Math.min(1, this.linkMax / 150));
+      this.repel = cv.hasAttribute("data-net-repel");
       this.S = { w: 0, h: 0, nodes: [], links: [], store: {} };
     }
 
@@ -167,7 +176,7 @@
           hx: x, hy: y, x: x, y: y,
           r: r, ring: ring, c: c, a: Math.max(.14, 1 - depth * 1.05),
           p: [extra(), extra(), extra(), extra()],
-          glow: 0, scale: 1, am: 1
+          glow: 0, scale: 1, am: 1, ox: 0, oy: 0
         });
       }
       /* Each node links to its nearest few later neighbours. The topology is
@@ -239,7 +248,7 @@
       g.globalAlpha = 1;
     };
 
-    Field.prototype.step = function (t) {
+    Field.prototype.step = function (t, dt) {
       const nodes = this.S.nodes, k = this.k;
       sweep.update(this.S, t);
       if (k !== 1) {
@@ -248,7 +257,36 @@
           n.x = n.hx + (n.x - n.hx) * k; n.y = n.hy + (n.y - n.hy) * k;
         }
       }
+      if (this.repel) this.nudge(dt);
       this.render();
+    };
+
+    /* Pushes each dot away from the pointer, measured from where the sweep has
+       put it this frame. The push is eased per dot, so the field parts softly
+       instead of snapping, and with no pointer every offset eases back to 0. */
+    Field.prototype.nudge = function (dt) {
+      const nodes = this.S.nodes, k = this.k, R = REPEL_R * k, R2 = R * R, push = REPEL_PUSH * k;
+      let px = 0, py = 0;
+      const on = pointer.on;
+      if (on) {
+        const box = this.cv.getBoundingClientRect();
+        px = pointer.x - box.left; py = pointer.y - box.top;
+      }
+      const eIn = 1 - Math.exp(-dt / REPEL_IN), eOut = 1 - Math.exp(-dt / REPEL_OUT);
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        let tx = 0, ty = 0;
+        if (on) {
+          const dx = n.x - px, dy = n.y - py, d2 = dx * dx + dy * dy;
+          if (d2 < R2 && d2 > .01) {
+            const f = 1 - d2 / R2, d = Math.sqrt(d2);
+            tx = dx / d * f * f * push; ty = dy / d * f * f * push;
+          }
+        }
+        const e = tx * tx + ty * ty > n.ox * n.ox + n.oy * n.oy ? eIn : eOut;
+        n.ox += (tx - n.ox) * e; n.oy += (ty - n.oy) * e;
+        n.x += n.ox; n.y += n.oy;
+      }
     };
 
     /* Where in its cycle the sweep should be when the page loads.
@@ -282,6 +320,16 @@
       return ((t % CYCLE) + CYCLE) % CYCLE;
     }
 
+    /* The pointer, in viewport px. Mouse and pen only: a finger on a phone is
+       scrolling, and dots jumping out from under it would read as a glitch. */
+    const pointer = { x: 0, y: 0, on: false };
+    window.addEventListener("pointermove", (e) => {
+      if (e.pointerType === "touch") { pointer.on = false; return; }
+      pointer.x = e.clientX; pointer.y = e.clientY; pointer.on = true;
+    }, { passive: true });
+    document.documentElement.addEventListener("pointerleave", () => { pointer.on = false; });
+    window.addEventListener("blur", () => { pointer.on = false; });
+
     const fields = canvases.map((cv) => new Field(cv));
     let running = false, raf = 0, last = 0, T = 0, boost = 0, lastY = 0, lastMove = -1e9;
 
@@ -303,7 +351,7 @@
       T += raw * (SPEED + (SCROLL_SPEED - SPEED) * boost);
       for (let i = 0; i < fields.length; i++) {
         const f = fields[i];
-        if (f.visible && f.S.w) f.step(T);
+        if (f.visible && f.S.w) f.step(T, raw);
       }
       raf = requestAnimationFrame(frame);
     }
