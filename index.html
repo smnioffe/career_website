@@ -462,6 +462,7 @@
         <button class="pf-tab" type="button" data-goto="4" aria-selected="false" role="tab">Finance<span class="pf-tab-n">02</span></button>
         <button class="pf-tab" type="button" data-goto="5" aria-selected="false" role="tab">Infographics<span class="pf-tab-n">01</span></button>
         <button class="pf-tab" type="button" data-goto="6" aria-selected="false" role="tab">ML Model<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="7" aria-selected="false" role="tab">Agentic AI<span class="pf-tab-n">02</span></button>
     </div>
 
     <div class="pf-stage">
@@ -643,6 +644,34 @@
             </div>
             <figcaption class="pf-caption">Selecting The Model</figcaption>
             <p class="pf-touch-body">To choose the model, I compared decision tree, k-nearest neighbors, random forest, ridge classifier and logistic regression, tuning the hyperparameters for each.</p>
+          </figure>
+        </div>
+      </div>
+      <div class="pf-panel" data-panel="7" role="tabpanel" aria-label="Agentic AI" hidden>
+        <div class="pf-grid pf-grid-solo">
+          <figure class="pf-item">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Agentic Assistant: Direct Answer — show details">
+              <img src="assets/imgs/agentic-decision-path.png" alt="Agent decision path: a spec question answered directly from product data" width="1940" height="925" loading="lazy">
+              <span class="pf-more" aria-hidden="true">+</span>
+              <div class="pf-veil">
+                <div class="pf-veil-title">Agentic Assistant: Direct Answer</div>
+                <p class="pf-veil-body">An agentic AI assistant I designed and built for product and support questions. Cheap deterministic steps run first: product recognition, intent classification and a &ldquo;can we answer directly?&rdquo; check. A spec question like this one is answered straight from structured product data in about 2 seconds, with no model writing the answer. The decision-path view shows which steps were rule-based, which were model-decided, and which systems were touched.</p>
+              </div>
+            </div>
+            <figcaption class="pf-caption">Agentic Assistant: Direct Answer</figcaption>
+            <p class="pf-touch-body">An agentic AI assistant I designed and built for product and support questions. Cheap deterministic steps run first: product recognition, intent classification and a &ldquo;can we answer directly?&rdquo; check. A spec question like this one is answered straight from structured product data in about 2 seconds, with no model writing the answer. The decision-path view shows which steps were rule-based, which were model-decided, and which systems were touched.</p>
+          </figure>
+          <figure class="pf-item">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Agentic Assistant: Investigate Loop — show details">
+              <img src="assets/imgs/agentic-decision-path-agent.png" alt="Agent decision path: a support question routed through the tool-using investigate loop" width="1940" height="925" loading="lazy">
+              <span class="pf-more" aria-hidden="true">+</span>
+              <div class="pf-veil">
+                <div class="pf-veil-title">Agentic Assistant: Investigate Loop</div>
+                <p class="pf-veil-body">The same assistant on a troubleshooting question. The model classifies intent, then a bounded act/observe loop picks tools from a fixed list to search the support library and check live support records. An evidence check confirms there is enough grounding before it answers with citations, asks a clarifying question, or declines.</p>
+              </div>
+            </div>
+            <figcaption class="pf-caption">Agentic Assistant: Investigate Loop</figcaption>
+            <p class="pf-touch-body">The same assistant on a troubleshooting question. The model classifies intent, then a bounded act/observe loop picks tools from a fixed list to search the support library and check live support records. An evidence check confirms there is enough grounding before it answers with citations, asks a clarifying question, or declines.</p>
           </figure>
         </div>
       </div>
