@@ -456,13 +456,14 @@
 
     <div class="pf-tabs" role="tablist" aria-label="Project sets">
         <button class="pf-tab" type="button" data-goto="0" aria-selected="false" role="tab">Search Success Metrics<span class="pf-tab-n">01</span></button>
-        <button class="pf-tab" type="button" data-goto="1" aria-selected="false" role="tab">Agentic AI<span class="pf-tab-n">02</span></button>
-        <button class="pf-tab" type="button" data-goto="2" aria-selected="false" role="tab">ETL Telemetry<span class="pf-tab-n">02</span></button>
-        <button class="pf-tab" type="button" data-goto="3" aria-selected="false" role="tab">Data Quality Scorecard<span class="pf-tab-n">03</span></button>
-        <button class="pf-tab" type="button" data-goto="4" aria-selected="false" role="tab">Workflow Capacity Planner<span class="pf-tab-n">01</span></button>
-        <button class="pf-tab" type="button" data-goto="5" aria-selected="false" role="tab">Finance<span class="pf-tab-n">02</span></button>
-        <button class="pf-tab" type="button" data-goto="6" aria-selected="false" role="tab">Infographics<span class="pf-tab-n">01</span></button>
-        <button class="pf-tab" type="button" data-goto="7" aria-selected="false" role="tab">ML Model<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="1" aria-selected="false" role="tab">Grounded RAG<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="2" aria-selected="false" role="tab">Agentic AI<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="3" aria-selected="false" role="tab">ETL Telemetry<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="4" aria-selected="false" role="tab">Data Quality Scorecard<span class="pf-tab-n">03</span></button>
+        <button class="pf-tab" type="button" data-goto="5" aria-selected="false" role="tab">Workflow Capacity Planner<span class="pf-tab-n">01</span></button>
+        <button class="pf-tab" type="button" data-goto="6" aria-selected="false" role="tab">Finance<span class="pf-tab-n">02</span></button>
+        <button class="pf-tab" type="button" data-goto="7" aria-selected="false" role="tab">Infographics<span class="pf-tab-n">01</span></button>
+        <button class="pf-tab" type="button" data-goto="8" aria-selected="false" role="tab">ML Model<span class="pf-tab-n">02</span></button>
     </div>
 
     <div class="pf-stage">
@@ -492,7 +493,35 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="1" role="tabpanel" aria-label="Agentic AI" hidden>
+      <div class="pf-panel" data-panel="1" role="tabpanel" aria-label="Grounded RAG" hidden>
+        <div class="pf-grid pf-grid-solo">
+          <figure class="pf-item">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Hybrid Retrieval and a Grounded Answer — show details">
+              <img src="assets/imgs/rag-retrieval-answer.jpg" alt="Search results with AI enrichment beside an AI-generated answer grounded in verified sources" width="3200" height="1902" loading="lazy">
+              <span class="pf-more" aria-hidden="true">+</span>
+              <div class="pf-veil">
+                <div class="pf-veil-title">Hybrid Retrieval and a Grounded Answer</div>
+                <p class="pf-veil-body">A grounded RAG experience I built for a financial-education library. Documents are chunked and retrieved with hybrid lexical + semantic search, results are AI-enriched with summaries, keywords and extracted facets, and an LLM answers using only the retrieved passages, then suggests follow-up questions.</p>
+              </div>
+            </div>
+            <figcaption class="pf-caption">Hybrid Retrieval and a Grounded Answer</figcaption>
+            <p class="pf-touch-body">A grounded RAG experience I built for a financial-education library. Documents are chunked and retrieved with hybrid lexical + semantic search, results are AI-enriched with summaries, keywords and extracted facets, and an LLM answers using only the retrieved passages, then suggests follow-up questions.</p>
+          </figure>
+          <figure class="pf-item">
+            <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Citations Traced to the Source Chunk — show details">
+              <img src="assets/imgs/rag-citation-source.jpg" alt="Verified sources with passage numbers, linked to the source article with the cited chunk highlighted" width="3200" height="1668" loading="lazy">
+              <span class="pf-more" aria-hidden="true">+</span>
+              <div class="pf-veil">
+                <div class="pf-veil-title">Citations Traced to the Source Chunk</div>
+                <p class="pf-veil-body">Every citation is traceable. Each verified source names the passage it came from, and &ldquo;go to source&rdquo; opens the article scrolled to that exact chunk, highlighted, with the neighboring chunk boundaries marked.</p>
+              </div>
+            </div>
+            <figcaption class="pf-caption">Citations Traced to the Source Chunk</figcaption>
+            <p class="pf-touch-body">Every citation is traceable. Each verified source names the passage it came from, and &ldquo;go to source&rdquo; opens the article scrolled to that exact chunk, highlighted, with the neighboring chunk boundaries marked.</p>
+          </figure>
+        </div>
+      </div>
+      <div class="pf-panel" data-panel="2" role="tabpanel" aria-label="Agentic AI" hidden>
         <div class="pf-grid pf-grid-solo">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Agentic Assistant: Direct Answer — show details">
@@ -520,7 +549,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="2" role="tabpanel" aria-label="ETL Telemetry" hidden>
+      <div class="pf-panel" data-panel="3" role="tabpanel" aria-label="ETL Telemetry" hidden>
         <div class="pf-grid pf-grid-multi">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Database Job Monitoring — show details">
@@ -548,7 +577,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="3" role="tabpanel" aria-label="Data Quality Scorecard" hidden>
+      <div class="pf-panel" data-panel="4" role="tabpanel" aria-label="Data Quality Scorecard" hidden>
         <div class="pf-grid pf-grid-multi">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Run Summary — show details">
@@ -588,7 +617,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="4" role="tabpanel" aria-label="Workflow Capacity Planner" hidden>
+      <div class="pf-panel" data-panel="5" role="tabpanel" aria-label="Workflow Capacity Planner" hidden>
         <div class="pf-grid pf-grid-solo">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Workflow Capacity Planner — show details">
@@ -603,7 +632,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="5" role="tabpanel" aria-label="Finance" hidden>
+      <div class="pf-panel" data-panel="6" role="tabpanel" aria-label="Finance" hidden>
         <div class="pf-grid pf-grid-multi">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Near Real-Time Stock Dashboard — show details">
@@ -631,7 +660,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="6" role="tabpanel" aria-label="Infographics" hidden>
+      <div class="pf-panel" data-panel="7" role="tabpanel" aria-label="Infographics" hidden>
         <div class="pf-grid pf-grid-solo">
           <figure class="pf-item pf-item-portrait">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Infographic Using Public Data — show details">
@@ -647,7 +676,7 @@
           </figure>
         </div>
       </div>
-      <div class="pf-panel" data-panel="7" role="tabpanel" aria-label="ML Model" hidden>
+      <div class="pf-panel" data-panel="8" role="tabpanel" aria-label="ML Model" hidden>
         <div class="pf-grid pf-grid-multi">
           <figure class="pf-item">
             <div class="pf-frame" tabindex="0" role="button" aria-expanded="false" aria-label="Appointment No Show Model — show details">
@@ -678,7 +707,7 @@
         </div>
         <div class="pf-nav-mobile">
           <button class="pf-nav" data-pf-prev type="button" aria-label="Previous set">←</button>
-          <span class="pf-nav-hint" data-pf-next-label>Next: Agentic AI</span>
+          <span class="pf-nav-hint" data-pf-next-label>Next: Grounded RAG</span>
           <button class="pf-nav" data-pf-next type="button" aria-label="Next set">→</button>
         </div>
       </div>
