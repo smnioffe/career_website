@@ -1134,6 +1134,50 @@
     });
   }
 
+  /* Touch has no hover, so 02 Expertise rows and 04 Focus cards borrow their
+     hover look from the scroll: whatever crosses a line just above mid-screen
+     gets .is-lit, and the highlight travels down the list as you read. Cards
+     side by side on a tablet light together. CSS for .is-lit lives in the
+     (hover:none),(pointer:coarse) block, so mouse users never see it. */
+  function initTouchSpotlight() {
+    const touch = window.matchMedia("(hover: none), (pointer: coarse)");
+    const groups = [
+      { box: document.querySelector(".xp-list"), sel: ".xp-row" },
+      { box: document.querySelector(".focus-grid"), sel: ".focus-card" }
+    ].filter(function (g) { return g.box; });
+    if (!groups.length) return;
+    groups.forEach(function (g) { g.items = Array.prototype.slice.call(g.box.querySelectorAll(g.sel)); });
+
+    let queued = false;
+    function clear() {
+      groups.forEach(function (g) {
+        g.box.classList.remove("has-lit");
+        g.items.forEach(function (el) { el.classList.remove("is-lit"); });
+      });
+    }
+    function update() {
+      queued = false;
+      if (!touch.matches) { clear(); return; }
+      const line = window.innerHeight * 0.42;
+      groups.forEach(function (g) {
+        let any = false;
+        g.items.forEach(function (el) {
+          const r = el.getBoundingClientRect();
+          const on = r.top <= line && r.bottom >= line;
+          el.classList.toggle("is-lit", on);
+          if (on) any = true;
+        });
+        g.box.classList.toggle("has-lit", any);
+      });
+    }
+    function queue() { if (!queued) { queued = true; requestAnimationFrame(update); } }
+
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue);
+    if (touch.addEventListener) touch.addEventListener("change", queue);
+    queue();
+  }
+
   function boot() {
     initYears();
     initResumeToc();
@@ -1142,6 +1186,7 @@
     initReveal();
     initProgress();
     initResumeButtons();
+    initTouchSpotlight();
   }
 
   if (document.readyState === "loading") {
