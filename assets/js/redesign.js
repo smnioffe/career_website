@@ -808,6 +808,21 @@
       b.addEventListener("click", function () { show(idx + 1); });
     });
 
+    /* Narrow screens: the arrows live in a dock pinned to the bottom of the
+       screen, so they never move. Each step also lines the new set's title up
+       just under the site nav, so every set starts in the same place instead
+       of wherever the last (taller or shorter) set happened to end. */
+    const narrow = window.matchMedia("(max-width: 820px)");
+    const head = document.querySelector(".pf-panel-head");
+    document.querySelectorAll(".pf-nav-mobile .pf-nav").forEach(function (b) {
+      b.addEventListener("click", function () {
+        if (!narrow.matches || !head) return;
+        const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--nav-h")) || 0;
+        const target = Math.round(head.getBoundingClientRect().top + window.scrollY - navH - 14);
+        if (Math.abs(window.scrollY - target) > 2) window.scrollTo({ top: target, behavior: "instant" });
+      });
+    });
+
     /* Arrow keys step the sets, but only while the portfolio is what you are
        looking at, and never while you are typing or tabbing through a frame. */
     document.addEventListener("keydown", function (e) {

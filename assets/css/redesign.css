@@ -169,7 +169,14 @@ section[id],header[id]{scroll-margin-top:78px}
 /* Narrow: the flanking arrows have nowhere to stand, so they move under the set. */
 @media (max-width:820px){
   .pf-stage > .pf-nav{display:none}
-  .pf-nav-mobile{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:34px;padding-top:20px;border-top:1px solid rgba(28,26,23,.12)}
+  /* The arrows dock to the bottom of the screen while the portfolio is in
+     view, so they sit in the same spot however tall the current set is. Short
+     sets get a floor, so the dock never floats mid-screen after one of them. */
+  .pf-nav-mobile{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:34px;
+    position:sticky;bottom:0;z-index:5;padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px));
+    border-top:1px solid rgba(28,26,23,.12);background:rgba(247,243,236,.94);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .pf-panels{min-height:calc(100vh - var(--nav-h,107px) - 170px);min-height:calc(100svh - var(--nav-h,107px) - 170px)}
   .pf-nav-hint{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#a09789;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
 @media (prefers-reduced-motion:reduce){
